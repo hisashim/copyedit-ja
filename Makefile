@@ -2,16 +2,20 @@
 
 EMACS    = emacs --batch --quick --directory .
 WGET     = wget --timestamping
+SRC      = perform-replace-with-dict.el \
+           shell-command-string.el \
+           copyedit-ja.el
+xyzzy_l  = $(patsubst %.el,%.l,$(SRC))
 cached   = ert.el
 clean   += $(cached)
-testlogs = test-perform-replace-with-dict-el.log \
-           test-shell-command-string-el.log \
-           test-copyedit-ja-el.log
-mostlyclean += $(testlogs)
+testlogs = $(foreach f,$(SRC),$(f:%.el=test-%-el.log))
 
-.PHONY: all test mostlyclean clean
+mostlyclean += $(testlogs) $(xyzzy_l)
 
 all: test
+
+%.l: %.el
+	cp $< $@
 
 test: $(testlogs)
 
@@ -27,3 +31,5 @@ mostlyclean:
 
 clean: mostlyclean
 	-rm -f $(clean)
+
+.PHONY: all test mostlyclean clean
