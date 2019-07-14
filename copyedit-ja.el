@@ -1,6 +1,6 @@
 ;; -*- utf-8-unix -*-
 ;; Japanese copyediting commands for Emacs and xyzzy
-;; Copyright (c) 2008-2011 Hisashi Morita
+;; Copyright (c) 2008-2019 Hisashi Morita
 ;; License: Public Domain
 ;;
 ;; Usage example:
@@ -12,16 +12,21 @@
 ;; Requirements:
 ;;   * perform-replace-with-dict.el
 ;;   * shell-command-string.el
+;;   * MeCab: Yet another Japanese morphological analyzer
+;;     - https://github.com/taku910/mecab
 ;;   * color-moccur.el
-;;     http://www.bookshelf.jp/elc/color-moccur.el
+;;     - v2.73: https://web.archive.org/web/20180527232131/www.bookshelf.jp/elc/color-moccur.el
+;;     - v2.71: https://www.emacswiki.org/emacs/color-moccur.el
+;;     - fork from v2.71: https://github.com/myuhe/color-moccur.el
 ;;
 ;; Bibliography:
 ;;   * Kurata Masanori, Suganuma Akira, Ushijima Kazuo,
 ;;     "Development of a System of Writing Tools for Japanese Documents on
 ;;      a Personal Computer."
-;;     http://ci.nii.ac.jp/naid/110003743558
+;;     https://ci.nii.ac.jp/naid/110003743558
 
 (require 'perform-replace-with-dict)
+(require 'shell-command-string)
 
 ;; ------------------------------------------------------------------------
 ;; utilities
@@ -583,11 +588,6 @@ Not implemented yet."
 
 ;; ----------------------------------------------------------------
 ;; Aquire reading of Japanese text
-;; requirement:
-;;   * MeCab: Yet Another Part-of-Speech and Morphological Analyzer
-;;     http://mecab.sourceforge.net/
-
-(require 'shell-command-string)
 
 (defun copyedit-ja-get-reading-katakana (str)
   "Acquire reading of Japanese text in katakana using MeCab."

@@ -1,8 +1,8 @@
 ;; -*- encoding: utf-8 -*-
 ;; Utility to write compatible code for Emacs and xyzzy
-;;   * GNU Emacs: http://www.gnu.org/software/emacs/
-;;   * xyzzy:     http://www.jsdlab.co.jp/~kamei/
-;; Copyright (c) 2008-2011 Hisashi Morita
+;;   * GNU Emacs: https://www.gnu.org/software/emacs/
+;;   * xyzzy: https://github.com/xyzzy-022/xyzzy
+;; Copyright (c) 2008-2019 Hisashi Morita
 ;; License: Public Domain
 ;;
 ;; Usage example:
