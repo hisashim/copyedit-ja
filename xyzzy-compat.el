@@ -32,6 +32,6 @@ Usage example:
   `(cond ((string-match "Emacs" (emacs-version)) ,emacs-form)
          ((string-match "xyzzy" (emacs-version)) ,xyzzy-form)
          (else (error (format "Unknown platform (emacs-version: %S)"
-			      (emacs-version))))))
+                              (emacs-version))))))
 
 (provide 'xyzzy-compat)
