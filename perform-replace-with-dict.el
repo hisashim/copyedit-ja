@@ -8,6 +8,8 @@
 ;;                                (RE2 . SUBST2) ...)
 ;;                              &optional START END)
 
+(require 'cl-lib)
+
 (defun foldl (f seed ls)
   (mapc (lambda (x) (setq seed (funcall f x seed))) ls)
   seed)
@@ -19,7 +21,7 @@
 (defun %zip-naive (&rest seq)
   (defun %heads (lists) (mapcar 'car lists))
   (defun %tails (lists) (mapcar 'cdr lists))
-  (if (every #'null (%heads seq))
+  (if (cl-every #'null (%heads seq))
       '()
       (cons (%heads seq) (apply #'%zip-naive (%tails seq)))))
 
@@ -50,13 +52,13 @@
 
 (defun group-sequence (seq &optional &key key)
   "group-sequence similar to Gauche's"
-  (reduce (lambda (seed elem)
-            (if key ; somehow &key (name default) does not work
-                (%push-or-push-to-last seed elem key)
-                (%push-or-push-to-last seed elem #'equal)))
-          seq
-          :initial-value '()
-          ))
+  (cl-reduce (lambda (seed elem)
+               (if key ; somehow &key (name default) does not work
+                   (%push-or-push-to-last seed elem key)
+                   (%push-or-push-to-last seed elem #'equal)))
+             seq
+             :initial-value '()
+             ))
 
 (defun %regexp-special-pseudo (str)
  (let ((md-bak (match-data)))
@@ -86,7 +88,7 @@
 
 ;; '("a" "b") => "[ab]", '("a" ".") => "a\\|."
 (defun %wrapup-group (seq)
-  (if (every #'%charclassable seq)
+  (if (cl-every #'%charclassable seq)
       (%rx-charclass seq)
       (%rx-or seq)))
 
@@ -100,8 +102,8 @@
 (defun %regexp-opt-re (ls)
   (let* ((grouped (group-sequence ls
                                   :key (lambda (a b)
-                                         (every #'%charclassable
-                                                (list a b)))))
+                                         (cl-every #'%charclassable
+                                                   (list a b)))))
          (wrapped-up (mapcar #'%wrapup-group
                              grouped))
          (or-ed (%rx-or wrapped-up)))
@@ -110,12 +112,12 @@
 (defun %assoc-exact-match (str dict)
   "Return an element from DICT which exactly matches STR.
 DICT must consist of regexp and replacement string pairs (re . repstr)."
-  (assoc* str dict
-          :test (lambda (s r)
-                  (let ((external-md (match-data)))
-                    (unwind-protect
-                        (if (string-match r s) (equal (match-string 0 s) s) nil)
-                      (set-match-data external-md))))))
+  (cl-assoc str dict
+            :test (lambda (s r)
+                    (let ((external-md (match-data)))
+                      (unwind-protect
+                          (if (string-match r s) (equal (match-string 0 s) s) nil)
+                        (set-match-data external-md))))))
 
 ;; dict: '(("foo"          . "bar")
 ;;         ("\\([A-Z]+\\)" . "_\\1_")
