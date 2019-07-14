@@ -10,6 +10,7 @@
 ;;     M-x copyedit-ja-normalize-typo-particle
 ;;
 ;; Requirements:
+;;   * xyzzy-compat.el
 ;;   * perform-replace-with-dict.el
 ;;   * shell-command-string.el
 ;;   * MeCab: Yet another Japanese morphological analyzer
@@ -25,6 +26,7 @@
 ;;      a Personal Computer."
 ;;     https://ci.nii.ac.jp/naid/110003743558
 
+(require 'xyzzy-compat)
 (require 'perform-replace-with-dict)
 (require 'shell-command-string)
 
@@ -32,34 +34,29 @@
 ;; utilities
 
 ;; compatibility for xyzzy
-(if (and (not (boundp 'emacs-version))
-         (boundp 'software-type)
-         (equal software-type "xyzzy"))
-    (defun emacs-version ()
-      (concat (software-type) " " (software-version)))
-    (defun xyzzyfy-regexp-src (emacs-regexp-src)
-      "Translate Emacs style regexp source to xyzzy style.
+(if-emacs-else-xyzzy
+ nil
+ (defun xyzzyfy-regexp-src (emacs-regexp-src)
+   "Translate Emacs style regexp source to xyzzy style.
 (e.g. '\\sj' to '\\cj', '\\Sj' to '\\Sj'.)"
-      (let* ((regexp-src (substitute-string emacs-regexp-src "\\\\cj" "\\sj"))
-             (regexp-src (substitute-string regexp-src       "\\\\Cj" "\\Sj")))
-        regexp-src)))
+   (let* ((regexp-src (substitute-string emacs-regexp-src "\\\\cj" "\\sj"))
+          (regexp-src (substitute-string regexp-src       "\\\\Cj" "\\Sj")))
+     regexp-src)))
 
 (defun my-grep-buffers (regexp-src)
   "Search REGEXP in buffers."
   (interactive)
-  (cond ((string-match "Emacs" (emacs-version))
-         (moccur regexp-src t))
-        ((string-match "xyzzy" (emacs-version))
-         (grep (xyzzyfy-regexp-src regexp-src)))))
+  (if-emacs-else-xyzzy
+   (moccur regexp-src t)
+   (grep (xyzzyfy-regexp-src regexp-src))))
 
 (defun grep-buffers-with-dict (dict)
   "Search REGEXP in buffers with DICT."
   (interactive)
   (let ((regexp-src (%regexp-opt-re (%keys dict))))
-    (cond ((string-match "Emacs" (emacs-version))
-           (moccur regexp-src t))
-          ((string-match "xyzzy" (emacs-version))
-           (grep (xyzzyfy-regexp-src regexp-src))))))
+    (if-emacs-else-xyzzy
+     (moccur regexp-src t)
+     (grep (xyzzyfy-regexp-src regexp-src)))))
 
 ;; ------------------------------------------------------------------------
 ;; applications

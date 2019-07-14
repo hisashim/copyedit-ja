@@ -8,7 +8,17 @@
 ;;                                (RE2 . SUBST2) ...)
 ;;                              &optional START END)
 
-(require 'cl-lib)
+(require 'xyzzy-compat)
+(if-emacs-else-xyzzy
+ (require 'cl-lib)
+ nil)
+
+;; compatibility for xyzzy
+(if-emacs-else-xyzzy
+ nil
+ (progn
+   (defun cl-every (f e) (every f e))
+   (defun cl-reduce (&rest args) (apply #'reduce args))))
 
 (defun foldl (f seed ls)
   (mapc (lambda (x) (setq seed (funcall f x seed))) ls)

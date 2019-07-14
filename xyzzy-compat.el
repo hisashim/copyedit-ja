@@ -12,13 +12,15 @@
 ;;       *minibuffer-default-history* ; xyzzy equivalent of minibuffer-history
 ;;       ))
 
-(if (boundp 'emacs-version)
-    nil
-  (progn
-    (defun emacs-version ()
-      (concat (software-type) " " (software-version)))
-    (defun read-from-minibuffer (prompt &optional opts)
-      (read-string prompt :default opts))))
+;; define emacs-version for non-Emacs
+(if (not (boundp 'emacs-version))
+    (let ((type (if (fboundp 'lisp-implementation-type)
+                    (lisp-implementation-type)
+                  "unknown-lisp-implementation-type"))
+          (version (if (fboundp 'lisp-implementation-version)
+                       (lisp-implementation-version))
+                   "unknown-lisp-implementation-version"))
+      (defun emacs-version () (concat type " " version))))
 
 (defmacro if-emacs-else-xyzzy (emacs-form xyzzy-form)
   "Evaluate a form for current platform.
@@ -33,5 +35,20 @@ Usage example:
          ((string-match "xyzzy" (emacs-version)) ,xyzzy-form)
          (else (error (format "Unknown platform (emacs-version: %S)"
                               (emacs-version))))))
+
+;; define or adjust some of Emacs standard stuff for xyzzy
+(if-emacs-else-xyzzy
+ (emacs-version) ; Emacs
+ (progn ; xyzzy
+   (defmacro defconst (name val) `(defconstant ,name ,val))
+   (defun mapconcat (f seq sep)
+     (reduce (lambda (acc e) (concat acc sep (apply f (list e)))) seq))
+   ;; backup match-string as match-string-orig
+   (setf (symbol-function 'match-string-orig) #'match-string)
+   ;; let match-string ignore extra args
+   (defun match-string (nth &rest args) (match-string-orig nth))
+   (defun read-from-minibuffer (prompt &optional opts)
+     (read-string prompt :default opts))
+   (emacs-version)))
 
 (provide 'xyzzy-compat)
