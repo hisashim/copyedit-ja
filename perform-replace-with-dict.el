@@ -20,13 +20,6 @@
    (defun cl-every (f e) (every f e))
    (defun cl-reduce (&rest args) (apply #'reduce args))))
 
-(defun foldl (f seed ls)
-  (mapc (lambda (x) (setq seed (funcall f x seed))) ls)
-  seed)
-
-(defun foldr (f seed ls)
-  (foldl f seed (reverse ls)))
-
 ;; '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))
 (defun %zip-naive (&rest seq)
   (defun %heads (lists) (mapcar 'car lists))
@@ -36,7 +29,6 @@
       (cons (%heads seq) (apply #'%zip-naive (%tails seq)))))
 
 (defun %keys (alist)   (mapcar 'car alist))
-(defun %values (alist) (mapcar 'cdr alist))
 
 (defun %translate (s dict)
   (let* ((counterpart (cdr (assoc s dict))))
@@ -60,7 +52,7 @@
             (%push without-last (%push last-group elem))
             (%push ls (list elem))))))
 
-(defun group-sequence (seq &optional &key key)
+(defun %group-sequence (seq &optional &key key)
   "group-sequence similar to Gauche's"
   (cl-reduce (lambda (seed elem)
                (if key ; somehow &key (name default) does not work
@@ -110,10 +102,10 @@
 
 ;; '("a" "b" "." "cd+") => "[ab]\\|.\\|cd+"
 (defun %regexp-opt-re (ls)
-  (let* ((grouped (group-sequence ls
-                                  :key (lambda (a b)
-                                         (cl-every #'%charclassable
-                                                   (list a b)))))
+  (let* ((grouped (%group-sequence ls
+                                   :key (lambda (a b)
+                                          (cl-every #'%charclassable
+                                                    (list a b)))))
          (wrapped-up (mapcar #'%wrapup-group
                              grouped))
          (or-ed (%rx-or wrapped-up)))

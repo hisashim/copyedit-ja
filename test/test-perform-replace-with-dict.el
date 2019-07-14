@@ -12,21 +12,9 @@
                                                        ("aa" . "A2")
                                                        ("b"  . "B"))))))
 
-(ert-deftest test-foldl ()
-             (should (equal '(3 2 1)
-                            (foldl 'cons '() '(1 2 3)))))
-
-(ert-deftest test-foldr ()
-             (should (equal '(1 2 3)
-                            (foldr 'cons '() '(1 2 3)))))
-
-(ert-deftest test-group-sequence ()
+(ert-deftest test-%group-sequence ()
              (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
-                            (group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
-
-(ert-deftest test-group-sequence ()
-             (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
-                            (group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
+                            (%group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
 
 (ert-deftest test-%wrapup-group-charclass ()
              (should (equal "[ab]"
