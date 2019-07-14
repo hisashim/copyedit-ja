@@ -485,6 +485,39 @@ Not implemented yet."
     (save-restriction
       (perform-replace-with-dict copyedit-ja-dict-distal-direct start end))))
 
+(defconst copyedit-ja-dict-direct-distal
+  (let ((rx-grp "\\(\\\\(.*\\\\)\\)\\(.*\\)")
+        (rx-ref "\\(\\\\[0-9]\\)\\(.*\\)"))
+    (mapcar (lambda (pair)
+              (let* ((key (car pair))
+                     (val (cdr pair))
+                     (kparts (if (string-match rx-grp key)
+                                 (cons (match-string 1 key) (match-string 2 key))
+                               (cons "" key)))
+                     (vparts (if (string-match rx-ref val)
+                                 (cons (match-string 1 val) (match-string 2 val))
+                               (cons "" val)))
+                     (src (concat (car kparts) (cdr vparts)))
+                     (tgt (concat (car vparts) (cdr kparts))))
+                (cons src tgt)))
+            copyedit-ja-dict-distal-direct)))
+
+(defun copyedit-ja-check-dadearu-to-desumasu ()
+  "Check style of Japanese text if direct (da/dearu)."
+  (interactive)
+  (grep-buffers-with-dict copyedit-ja-dict-direct-distal))
+
+(defun copyedit-ja-convert-dadearu-desumasu ()
+  "Change style of Japanese text from direct (da/dearu) to distal (desu/masu)."
+  (interactive)
+  (perform-replace-with-dict copyedit-ja-dict-direct-distal))
+
+(defun copyedit-ja-convert-dadearu-to-desumasu-region (start end)
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (perform-replace-with-dict copyedit-ja-dict-direct-distal start end))))
+
 ;; ----------------------------------------------------------------
 ;; katakana and hiragana conversion
 
