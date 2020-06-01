@@ -7,19 +7,19 @@
 (require 'copyedit-ja)
 
 (ert-deftest test-%katakana-to-hiragana ()
-             (should (equal "い"
-                            (%katakana-to-hiragana "イ"))))
+             (should (equal "a1ひらかた漢字"
+                            (%katakana-to-hiragana "a1ひらカタ漢字"))))
 
 (ert-deftest test-%hiragana-to-katakana ()
-             (should (equal "イ"
-                            (%hiragana-to-katakana "い"))))
+             (should (equal "a1ヒラカタ漢字"
+                            (%hiragana-to-katakana "a1ひらカタ漢字"))))
 
 (ert-deftest test-copyedit-ja-get-reading-katakana ()
-             (should (equal "カンジ"
-                            (copyedit-ja-get-reading-katakana "漢字"))))
+             (should (equal "a1ヒラカタカンジ"
+                            (copyedit-ja-get-reading-katakana "a1ひらカタ漢字"))))
 
 (ert-deftest test-copyedit-ja-get-reading-hiragana ()
-             (should (equal "かんじ"
-                            (copyedit-ja-get-reading-hiragana "漢字"))))
+             (should (equal "a1ひらかたかんじ"
+                            (copyedit-ja-get-reading-hiragana "a1ひらカタ漢字"))))
 
 (ert-run-tests-batch-and-exit)
