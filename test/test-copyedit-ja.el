@@ -10,6 +10,31 @@
              (should (equal "a1ひらかた漢字"
                             (%katakana-to-hiragana "a1ひらカタ漢字"))))
 
+(ert-deftest test-%katakana-to-hiragana-thorough ()
+  (let ((hira (concat "ぁあぃいぅうぇえぉお"
+                      "かがきぎくぐけげこご"
+                      "さざしじすずせぜそぞ"
+                      "ただちぢっつづてでとど"
+                      "なにぬねの"
+                      "はばぱひびぴふぶぷへべぺほぼぽ"
+                      "まみむめも"
+                      "ゃやゅゆょよ"
+                      "らりるれろ"
+                      "ゎわゐゑをん"
+                      "ゔゕゖわ゙ゐ゙ゑ゙を゙ゝゞ"))
+        (kata (concat "ァアィイゥウェエォオ"
+                      "カガキギクグケゲコゴ"
+                      "サザシジスズセゼソゾ"
+                      "タダチヂッツヅテデトド"
+                      "ナニヌネノ"
+                      "ハバパヒビピフブプヘベペホボポ"
+                      "マミムメモ"
+                      "ャヤュユョヨ"
+                      "ラリルレロ"
+                      "ヮワヰヱヲン"
+                      "ヴヵヶヷヸヹヺヽヾ")))
+    (should (equal hira (%katakana-to-hiragana kata)))))
+
 (ert-deftest test-%hiragana-to-katakana ()
              (should (equal "a1ヒラカタ漢字"
                             (%hiragana-to-katakana "a1ひらカタ漢字"))))

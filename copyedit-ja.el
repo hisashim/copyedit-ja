@@ -532,7 +532,9 @@ Not implemented yet."
                      "ハ バ パ ヒ ビ ピ フ ブ プ ヘ ベ ペ ホ ボ ポ "
                      "マ ミ ム メ モ "
                      "ャ ヤ ュ ユ ョ ヨ "
-                     "ラ リ ル レ ロ ゎ ワ ゐ ゑ ヲ ン")))
+                     "ラ リ ル レ ロ "
+                     "ヮ ワ ヰ ヱ ヲ ン "
+                     "ヴ ヵ ヶ ヷ ヸ ヹ ヺ ヽ ヾ")))
     (split-string str " ")))
 
 (defconst copyedit-ja-hiragana
@@ -544,7 +546,9 @@ Not implemented yet."
                      "は ば ぱ ひ び ぴ ふ ぶ ぷ へ べ ぺ ほ ぼ ぽ "
                      "ま み む め も "
                      "ゃ や ゅ ゆ ょ よ "
-                     "ら り る れ ろ ゎ わ ゐ ゑ を ん")))
+                     "ら り る れ ろ "
+                     "ゎ わ ゐ ゑ を ん "
+                     "ゔ ゕ ゖ わ゙ ゐ゙ ゑ゙ を゙ ゝ ゞ")))
     (split-string str " ")))
 
 (defconst copyedit-ja-dict-katakana-hiragana
