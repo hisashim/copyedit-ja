@@ -1,4 +1,4 @@
-;; -*- utf-8-unix -*-
+;; -*- encoding: utf-8 -*-
 ;; Japanese copyediting commands for Emacs and xyzzy
 ;; Copyright (c) 2008-2019 Hisashi Morita
 ;; License: Public Domain
