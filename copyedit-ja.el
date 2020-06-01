@@ -594,13 +594,16 @@ Not implemented yet."
   "Acquire reading of Japanese text in hiragana using MeCab."
   (%katakana-to-hiragana (copyedit-ja-get-reading-katakana str)))
 
-(defun copyedit-ja-katakana-region (begin end)
-  "Convert region to katakana."
+;; ----------------------------------------------------------------
+;; hiragana, katakna, and kanji to katakana/hiragana conversion
+
+(defun copyedit-ja-kanakanji-to-katakana-region (begin end)
+  "Convert hiragana, katakna, and kanji in region to katakana."
   (interactive "r")
   (%filter-region #'copyedit-ja-get-reading-katakana begin end))
 
-(defun copyedit-ja-hiragana-region (begin end)
-  "Convert region to hiragana."
+(defun copyedit-ja-kanakanji-to-hiragana-region (begin end)
+  "Convert hiragana, katakna, and kanji in region to hiragana."
   (interactive "r")
   (%filter-region #'copyedit-ja-get-reading-hiragana begin end))
 
