@@ -14,4 +14,12 @@
              (should (equal "イ"
                             (%hiragana-to-katakana "い"))))
 
+(ert-deftest test-copyedit-ja-get-reading-katakana ()
+             (should (equal "カンジ"
+                            (copyedit-ja-get-reading-katakana "漢字"))))
+
+(ert-deftest test-copyedit-ja-get-reading-hiragana ()
+             (should (equal "かんじ"
+                            (copyedit-ja-get-reading-hiragana "漢字"))))
+
 (ert-run-tests-batch-and-exit)

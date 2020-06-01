@@ -5,6 +5,11 @@
 ;;
 ;; Usage:
 ;;   (shell-command-string "grep" STRING "-in")
+;;
+;; Note:
+;;   If something gets wrong when dealing with non-ASCII strings,
+;;   try setting character encoding explicitly, e.g.
+;;   (progn (prefer-coding-system 'utf-8-unix) ...
 
 (defun shell-command-string (cmd input &rest opts)
   "Run CMD as sub-process with INPUT for stdin. Return stdout as string."

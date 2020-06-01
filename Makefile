@@ -1,6 +1,6 @@
 #!/usr/bin/make
 
-EMACS    = emacs --batch --quick --directory .
+EMACS    = emacs --batch --quick --directory . --eval "(prefer-coding-system 'utf-8-unix)"
 WGET     = wget --timestamping
 SRC      = perform-replace-with-dict.el \
            shell-command-string.el \
