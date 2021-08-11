@@ -10,22 +10,6 @@
 
 (require 'cl-lib)
 
-;; '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))
-(defun %zip-naive (&rest seq)
-  (defun %heads (lists) (mapcar 'car lists))
-  (defun %tails (lists) (mapcar 'cdr lists))
-  (if (cl-every #'null (%heads seq))
-      '()
-      (cons (%heads seq) (apply #'%zip-naive (%tails seq)))))
-
-(defun %keys (alist)   (mapcar 'car alist))
-
-(defun %translate (s dict)
-  (let* ((counterpart (cdr (assoc s dict))))
-    (if counterpart
-        counterpart
-        s)))
-
 ;; '(a b) c => '(a b c)
 (defun %push (ls elem)
   (reverse (cons elem (reverse ls))))

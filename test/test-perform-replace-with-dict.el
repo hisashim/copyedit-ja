@@ -32,12 +32,4 @@
              (should (equal "[ab]\\|.\\|cd+"
                             (%regexp-opt-re '("a" "b" "." "cd+")))))
 
-(ert-deftest test-%zip-naive ()
-             (should (equal '((1 4) (2 5) (3 nil))
-                            (%zip-naive '(1 2 3) '(4 5)))))
-
-(ert-deftest test-%translate ()
-             (should (equal "A"
-                            (%translate "a" '(("a" . "A"))))))
-
 (ert-run-tests-batch-and-exit)

@@ -37,6 +37,22 @@
   (let ((regexp-src (%regexp-opt-re (%keys dict))))
      (moccur regexp-src t)))
 
+(defun %zip-naive (&rest seq)
+  "'(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))"
+  (defun %heads (lists) (mapcar 'car lists))
+  (defun %tails (lists) (mapcar 'cdr lists))
+  (if (cl-every #'null (%heads seq))
+      '()
+      (cons (%heads seq) (apply #'%zip-naive (%tails seq)))))
+
+(defun %keys (alist)   (mapcar 'car alist))
+
+(defun %translate (s dict)
+  (let* ((counterpart (cdr (assoc s dict))))
+    (if counterpart
+        counterpart
+        s)))
+
 ;; ------------------------------------------------------------------------
 ;; applications
 ;; inspired by Suikou
