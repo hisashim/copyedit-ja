@@ -90,46 +90,73 @@ DICT must consist of regexp and replacement string pairs (re . repstr)."
                           (if (string-match r s) (equal (match-string 0 s) s) nil)
                         (set-match-data external-md))))))
 
-;; dict: '(("foo"          . "bar")
-;;         ("\\([A-Z]+\\)" . "_\\1_")
-;;         ("[a-z]"        . (lambda (s) (upcase s)))
-;;         ...)
-(defun %lookup-dict (dict count)
-  "Dictionary lookup handler for perform-replace"
-  (let* ((substr   (match-string 0))
-         (dic      dict)
-         (the-pair (%assoc-exact-match substr dic))
-         (key      (car the-pair))
-         (val      (cdr the-pair))
-         (replacement (cond ((stringp val) val)
-                            ((functionp val) (funcall val substr))
-                            (t val)))
-         (replaced (save-match-data
-                     (string-match key substr)
-                     (replace-match (cond ((stringp val) val)
-                                          ((functionp val) (funcall val substr))
-                                          (t "bummers!"))    ; NEWTEXT
-                                    nil    ; FIXEDCASE
-                                    nil    ; LITERAL
-                                    substr ; STRING
-                                    nil    ; SUBEXP
-                                    ))))
-    replaced))
+(defun %sort-dict (dict)
+  "Sort DICT by key type (regular strings to regexps) and by key
+length (long to short)."
+  (let ((strings-to-regexps-and-long-to-short
+         (lambda (pair-a pair-b)
+           (let* ((key-a (car pair-a))
+                  (key-b (car pair-b))
+                  (src-a (regexp-quote key-a))
+                  (src-b (regexp-quote key-b))
+                  (a-is-regexp (not (equal src-a key-a)))
+                  (b-is-regexp (not (equal src-b key-b))))
+             (cond ((and (not a-is-regexp) b-is-regexp) t)
+                   ((and a-is-regexp (not b-is-regexp)) nil)
+                   (t (>= (length src-a) (length src-b))))))))
+    (sort dict strings-to-regexps-and-long-to-short)))
+
+(defun %find-replacement (str dict)
+  "Return DICT value whose key exactly matches STR. If none found,
+return STR.
+
+DICT keys are regexps (including plain strings), while values are
+strings or functions.  DICT must be sorted by key type (plain
+strings to regexps) and by key length (long to short).
+
+Example:
+  '((\"foobar\" . \"Foobar\")
+    (\"bar\"    . \"Bar\")
+    (\"[a-z]+\" . (lambda (s) (upcase s)))
+    ...)"
+  (let* ((case-fold-search nil)
+         (matching-entry (%assoc-exact-match str dict)))
+    (if matching-entry
+        (let* ((key (car matching-entry))
+               (val (cdr matching-entry))
+               (dummy (cond ((stringp val) val)
+                            ((functionp val) (funcall val str))
+                            (t val))) ; FIXME: This exp should be unnecessary
+               (replacement (save-match-data
+                              (string-match key str)
+                              (replace-match
+                               (cond ((stringp val) val)
+                                     ((functionp val) (funcall val str))
+                                     (t "Error: Invalid dictionary entry")) ; NEWTEXT
+                               nil ; FIXEDCASE
+                               nil ; LITERAL
+                               str ; STRING
+                               nil ; SUBEXP
+                               ))))
+          replacement)
+      str)))
 
 (defun perform-replace-with-dict (dict &optional start end)
-  "Invoke perform-replace using dict"
-  (let* ((re (%regexp-opt-re (mapcar #'car dict))))
-    (perform-replace re    ; FROM-STRING
-                     `((lambda (data count)
-                         (funcall #'%lookup-dict data count))
-                       . ,dict) ; REPLACEMENTS
-                     t     ; QUERY-FLAG
-                     t     ; REGEXP-FLAG
-                     nil   ; DELIMITED-FLAG
-                     nil   ; &optional REPEAT-COUNT
-                     nil   ; MAP
-                     start ; START
-                     end   ; END
-                     )))
+  "Invoke perform-replace using DICT."
+  (let* ((dict-sorted (%sort-dict dict))
+         (re (%regexp-opt-re (mapcar #'car dict-sorted))))
+    (save-mark-and-excursion
+      (perform-replace re    ; FROM-STRING
+                       `((lambda (data _count)
+                           (funcall #'%find-replacement (match-string 0) data))
+                         . ,dict-sorted) ; REPLACEMENTS
+                       t     ; QUERY-FLAG
+                       t     ; REGEXP-FLAG
+                       nil   ; DELIMITED-FLAG
+                       nil   ; &optional REPEAT-COUNT
+                       nil   ; MAP
+                       start ; START
+                       end   ; END
+                       ))))
 
 (provide 'perform-replace-with-dict)

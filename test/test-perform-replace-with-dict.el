@@ -37,4 +37,22 @@
     (should (equal '("[a-z]+" . "OTHER") (%assoc-exact-match "baz" dict)))
     (should (equal nil (%assoc-exact-match "123" dict)))))
 
+(ert-deftest test-%sort-dict ()
+  (let ((dict-unsorted '(("bar" . "Bar")
+                         ("[a-z]+" . "OTHER")
+                         ("foobar" . "Foobar")))
+        (dict-sorted '(("foobar" . "Foobar")
+                       ("bar" . "Bar")
+                       ("[a-z]+" . "OTHER"))))
+    (should (equal dict-sorted (%sort-dict dict-unsorted)))))
+
+(ert-deftest test-%find-replacement ()
+  (let ((dict '(("foobar" . "Foobar")
+                ("bar" . "Bar")
+                ("[a-z]+" . (lambda (s) (upcase s))))))
+    (should (equal "Foobar" (%find-replacement "foobar" dict)))
+    (should (equal "Bar" (%find-replacement "bar" dict)))
+    (should (equal "BAZ" (%find-replacement "baz" dict)))
+    (should (equal "123" (%find-replacement "123" dict)))))
+
 (ert-run-tests-batch-and-exit)
