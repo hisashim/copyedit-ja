@@ -8,17 +8,7 @@
 ;;                                (RE2 . SUBST2) ...)
 ;;                              &optional START END)
 
-(require 'xyzzy-compat)
-(if-emacs-else-xyzzy
- (require 'cl-lib)
- nil)
-
-;; compatibility for xyzzy
-(if-emacs-else-xyzzy
- nil
- (progn
-   (defun cl-every (f e) (every f e))
-   (defun cl-reduce (&rest args) (apply #'reduce args))))
+(require 'cl-lib)
 
 ;; '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))
 (defun %zip-naive (&rest seq)

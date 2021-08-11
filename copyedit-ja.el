@@ -1,5 +1,5 @@
 ;; -*- encoding: utf-8 -*-
-;; Japanese copyediting commands for Emacs and xyzzy
+;; Japanese copyediting commands for Emacs
 ;; Copyright (c) 2008-2019 Hisashi Morita
 ;; License: Public Domain
 ;;
@@ -10,7 +10,6 @@
 ;;     M-x copyedit-ja-normalize-typo-particle
 ;;
 ;; Requirements:
-;;   * xyzzy-compat.el
 ;;   * perform-replace-with-dict.el
 ;;   * shell-command-string.el
 ;;   * MeCab: Yet another Japanese morphological analyzer
@@ -26,30 +25,17 @@
 ;;      a Personal Computer."
 ;;     https://ci.nii.ac.jp/naid/110003743558
 
-(require 'xyzzy-compat)
 (require 'perform-replace-with-dict)
 (require 'shell-command-string)
 
 ;; ------------------------------------------------------------------------
 ;; utilities
 
-;; compatibility for xyzzy
-(if-emacs-else-xyzzy
- nil
- (defun xyzzyfy-regexp-src (emacs-regexp-src)
-   "Translate Emacs style regexp source to xyzzy style.
-(e.g. '\\sj' to '\\cj', '\\Sj' to '\\Sj'.)"
-   (let* ((regexp-src (substitute-string emacs-regexp-src "\\\\cj" "\\sj"))
-          (regexp-src (substitute-string regexp-src       "\\\\Cj" "\\Sj")))
-     regexp-src)))
-
 (defun grep-buffers-with-dict (dict)
   "Search REGEXP in buffers with DICT."
   (interactive)
   (let ((regexp-src (%regexp-opt-re (%keys dict))))
-    (if-emacs-else-xyzzy
-     (moccur regexp-src t)
-     (grep (xyzzyfy-regexp-src regexp-src)))))
+     (moccur regexp-src t)))
 
 ;; ------------------------------------------------------------------------
 ;; applications

@@ -3,7 +3,6 @@
 ;; Copyright (c) 2008-2011 Hisashi Morita
 ;; License: Public Domain
 
-(require xyzzy-compat)
 (require 'copyedit-ja)
 
 (defun latex-env-around-region (begin end pre &optional env-name)
@@ -11,12 +10,9 @@
   (interactive
       (list (region-beginning)
             (region-end)
-            (if-emacs-else-xyzzy current-prefix-arg
-				 (if *prefix-args* *prefix-value* nil))
+            current-prefix-arg
             (read-from-minibuffer "Env name: "
-                                  (car (if-emacs-else-xyzzy
-					minibuffer-history
-					*minibuffer-default-history*)))))
+                                  (car minibuffer-history))))
   (let* ((env-begin (concat "\\begin{" (or env-name "") "}\n"))
          (env-end (concat "\\end{" (or env-name "") "}\n")))
     (save-excursion
