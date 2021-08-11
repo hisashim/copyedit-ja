@@ -43,13 +43,6 @@
           (regexp-src (substitute-string regexp-src       "\\\\Cj" "\\Sj")))
      regexp-src)))
 
-(defun my-grep-buffers (regexp-src)
-  "Search REGEXP in buffers."
-  (interactive)
-  (if-emacs-else-xyzzy
-   (moccur regexp-src t)
-   (grep (xyzzyfy-regexp-src regexp-src))))
-
 (defun grep-buffers-with-dict (dict)
   "Search REGEXP in buffers with DICT."
   (interactive)

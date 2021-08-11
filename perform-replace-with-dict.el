@@ -62,12 +62,6 @@
              :initial-value '()
              ))
 
-(defun %regexp-special-pseudo (str)
- (let ((md-bak (match-data)))
-   (unwind-protect
-       (string-match "[[:punct:]]" str)
-     (set-match-data md-bak))))
-
 (defun %regexp-special (str)
   (not (equal str (regexp-quote str))))
 
@@ -93,12 +87,6 @@
   (if (cl-every #'%charclassable seq)
       (%rx-charclass seq)
       (%rx-or seq)))
-
-;; '("a" "." "bc") => "a\\|.\\|bc"
-(defun %regexp-opt-re-naive (ls)
-  (concat ""
-          (mapconcat #'identity ls "\\|")
-          ""))
 
 ;; '("a" "b" "." "cd+") => "[ab]\\|.\\|cd+"
 (defun %regexp-opt-re (ls)
