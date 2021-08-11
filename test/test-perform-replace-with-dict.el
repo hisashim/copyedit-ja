@@ -6,12 +6,6 @@
 (require 'ert)
 (require 'perform-replace-with-dict)
 
-(ert-deftest test-%assoc-exact-match ()
-             (should (equal '("aa" . "A2")
-                            (%assoc-exact-match "aa" '(("a"  . "A")
-                                                       ("aa" . "A2")
-                                                       ("b"  . "B"))))))
-
 (ert-deftest test-%group-sequence ()
              (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
                             (%group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
@@ -31,5 +25,16 @@
 (ert-deftest test-%regexp-opt-re ()
              (should (equal "[ab]\\|.\\|cd+"
                             (%regexp-opt-re '("a" "b" "." "cd+")))))
+
+(ert-deftest test-%assoc-exact-match ()
+  (let ((dict '(("foobar" . "Foobar")
+                ("foo" . "Foo")
+                ("bar" . "Bar")
+                ("[a-z]+" . "OTHER"))))
+    (should (equal '("foobar" . "Foobar") (%assoc-exact-match "foobar" dict)))
+    (should (equal '("foo" . "Foo") (%assoc-exact-match "foo" dict)))
+    (should (equal '("bar" . "Bar") (%assoc-exact-match "bar" dict)))
+    (should (equal '("[a-z]+" . "OTHER") (%assoc-exact-match "baz" dict)))
+    (should (equal nil (%assoc-exact-match "123" dict)))))
 
 (ert-run-tests-batch-and-exit)

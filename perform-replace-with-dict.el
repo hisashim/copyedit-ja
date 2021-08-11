@@ -10,67 +10,74 @@
 
 (require 'cl-lib)
 
-;; '(a b) c => '(a b c)
-(defun %push (ls elem)
-  (reverse (cons elem (reverse ls))))
-
-;; '(... (a a)) a => '(... (a a a))
-;; '(... (a a)) b => '(... (a a) (b))
-(defun %push-or-push-to-last (ls elem pred)
-  (if (null ls)
-      (%push ls (list elem))
-      (let* ((last-group   (car (reverse ls)))
-             (last-elem    (car (reverse last-group)))
-             (without-last (reverse (cdr (reverse ls)))))
-        (if (funcall pred last-elem elem)
-            (%push without-last (%push last-group elem))
-            (%push ls (list elem))))))
-
 (defun %group-sequence (seq &optional &key key)
-  "group-sequence similar to Gauche's"
-  (cl-reduce (lambda (seed elem)
-               (if key ; somehow &key (name default) does not work
-                   (%push-or-push-to-last seed elem key)
-                   (%push-or-push-to-last seed elem #'equal)))
-             seq
-             :initial-value '()
-             ))
+  "Group a sequence of elements to a sequence of groups of same
+sucessive elements.
+Example:
+  '(a a a) => '((a a a))
+  '(a a b) => '((a a) (b))
+  '(a a b a a) => '((a a) (b) (a a))"
+  (let* ((push
+          ;; '(a b) c => '(a b c)
+          (lambda (ls elem) (reverse (cons elem (reverse ls)))))
+         (push-or-push-to-last
+          ;; '(... (a a)) a => '(... (a a a))
+          ;; '(... (a a)) b => '(... (a a) (b))
+          (lambda (ls elem pred)
+            (if (null ls)
+                (funcall push ls (list elem))
+              (let* ((last-group   (car (reverse ls)))
+                     (last-elem    (car (reverse last-group)))
+                     (without-last (reverse (cdr (reverse ls)))))
+                (if (funcall pred last-elem elem)
+                    (funcall push without-last (funcall push last-group elem))
+                  (funcall push ls (list elem))))))))
+    (cl-reduce (lambda (seed elem)
+                 (if key ; somehow &key (name default) does not work
+                     (funcall push-or-push-to-last seed elem key)
+                   (funcall push-or-push-to-last seed elem #'equal)))
+               seq
+               :initial-value '())))
 
-(defun %regexp-special (str)
-  (not (equal str (regexp-quote str))))
-
-(defun %charclassable (str)
-  (and (stringp str)
-       (= 1 (length str))
-       (not (%regexp-special str))))
-
-;; "a" => "\\(a\\)"
-(defun %rx-group (str)
-  (concat "\\(" str "\\)"))
-
-;; '("a" "b") => "[ab]"
-(defun %rx-charclass (strings)
-  (apply #'concat `("[" ,@strings "]")))
-
-;; '("a" "b") => "a\\|b"
-(defun %rx-or (strings)
-  (mapconcat #'identity strings "\\|"))
-
-;; '("a" "b") => "[ab]", '("a" ".") => "a\\|."
 (defun %wrapup-group (seq)
-  (if (cl-every #'%charclassable seq)
-      (%rx-charclass seq)
-      (%rx-or seq)))
+  "Group together regular characters to a charclass, strings and
+regexp special characters to an OR expression.
+Example:
+  '(\"a\" \"b\") => \"[ab]\"
+  '(\"a\" \".\") => \"a\\|.\""
+  (let ((regexp-charclassable
+         (lambda (str) (and (stringp str)
+                            (= 1 (length str))
+                            (equal str (regexp-quote str)))))
+        (regexp-charclass
+         ;; '("a" "b") => "[ab]"
+         (lambda (strs) (apply #'concat `("[" ,@strs "]"))))
+        (regexp-or
+         ;; '("a" "b") => "a\\|b"
+         (lambda (strs) (mapconcat #'identity strs "\\|"))))
+    (if (cl-every regexp-charclassable seq)
+        (funcall regexp-charclass seq)
+      (funcall regexp-or seq))))
 
-;; '("a" "b" "." "cd+") => "[ab]\\|.\\|cd+"
 (defun %regexp-opt-re (ls)
-  (let* ((grouped (%group-sequence ls
+  "Return a (naively) optimized regexp. Unlike standard `regexp-opt',
+this function accepts regexps as its input.
+Example:
+  '(\"a\" \"b\" \".\" \"cd+\") => \"[ab]\\|.\\|cd+\""
+  (let* ((regexp-charclassable
+         (lambda (str) (and (stringp str)
+                            (= 1 (length str))
+                            (equal str (regexp-quote str)))))
+         (regexp-or
+          ;; '("a" "b") => "a\\|b"
+          (lambda (strs) (mapconcat #'identity strs "\\|")))
+         (grouped (%group-sequence ls
                                    :key (lambda (a b)
-                                          (cl-every #'%charclassable
+                                          (cl-every regexp-charclassable
                                                     (list a b)))))
          (wrapped-up (mapcar #'%wrapup-group
                              grouped))
-         (or-ed (%rx-or wrapped-up)))
+         (or-ed (funcall regexp-or wrapped-up)))
     or-ed))
 
 (defun %assoc-exact-match (str dict)
