@@ -34,24 +34,27 @@
 (defun grep-buffers-with-dict (dict)
   "Search REGEXP in buffers with DICT."
   (interactive)
-  (let ((regexp-src (%regexp-opt-re (%keys dict))))
+  (let ((regexp-src (%regexp-opt-re (mapcar 'car dict))))
      (moccur regexp-src t)))
 
 (defun %zip-naive (&rest seq)
-  "'(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))"
-  (defun %heads (lists) (mapcar 'car lists))
-  (defun %tails (lists) (mapcar 'cdr lists))
-  (if (cl-every #'null (%heads seq))
+  "Zip lists, e.g. '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))"
+  (if (cl-every #'null (mapcar 'car seq))
       '()
-      (cons (%heads seq) (apply #'%zip-naive (%tails seq)))))
-
-(defun %keys (alist)   (mapcar 'car alist))
+    (cons (mapcar 'car seq) (apply #'%zip-naive (mapcar 'cdr seq)))))
 
 (defun %translate (s dict)
   (let* ((counterpart (cdr (assoc s dict))))
     (if counterpart
         counterpart
         s)))
+
+(defun %filter-region (f begin end)
+  (let* ((src (buffer-substring begin end))
+         (replacement (funcall f src)))
+    (progn
+      (delete-region begin end)
+      (insert replacement))))
 
 ;; ------------------------------------------------------------------------
 ;; applications
@@ -564,13 +567,6 @@ Not implemented yet."
                (%translate s copyedit-ja-dict-hiragana-katakana))
              (split-string str "" t)
              ""))
-
-(defun %filter-region (f begin end)
-  (let* ((src (buffer-substring begin end))
-         (replacement (funcall f src)))
-    (progn
-      (delete-region begin end)
-      (insert replacement))))
 
 (defun copyedit-ja-katakana-to-hiragana-region (begin end)
   "Convert katakana in region to hiragana."
