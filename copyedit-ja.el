@@ -385,7 +385,7 @@ Note:
   (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-conjunctive-particle-ga))
 
 (defconst copyedit-ja--dict-user-specified-keyword
-  '(("\\(すなわち)" . "\\1")
+  '(("\\(すなわち\\)" . "\\1")
     ("\\(ゆえに\\)" . "\\1")
     ("\\(したがって\\)" . "\\1")
     ("\\(非常に\\)" . "\\1")
