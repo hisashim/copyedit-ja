@@ -404,48 +404,36 @@ Note:
   (interactive)
   (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-long-hiragana-sequence))
 
-(defconst copyedit-ja--dict-monotonous-sentence
-  '(()))
-
 (defun copyedit-ja-check-monotonous-sentence ()
   "Find monotonous, possibly dull sentence.
 Not implememted yet."
   (interactive)
-  (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-monotonous-sentence))
-
-(defconst copyedit-ja--dict-beginning-of-sentence
-  '(("\\(^\\cj\\|[。．]\\cj\\)" . "\\1")))
+  (message "Not implemented yet."))
 
 (defun copyedit-ja-enumerate-beginning-of-sentence ()
   "Enumerate beginning of sentences.
 Not implemented yet."
   (interactive)
-  (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-beginning-of-sentence))
-
-(defconst copyedit-ja--dict-writing-style
-  '(("\\(\\cj\\{1,5\\}[。．]\\)" . "\\1")))
+  (message "Not implemented yet."))
 
 (defun copyedit-ja-check-writing-style ()
   "Check writing style, by sorting sentences by the end of them.
 Not implemented yet."
   (interactive)
-  (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-writing-style))
-
-(defconst copyedit-ja--dict-long-sentence
-  '(("\\([。．^]\\cj\\{100,\\}[。．]\\)" . "\\1")))
+  (message "Not implemented yet."))
 
 (defun copyedit-ja-enumerate-long-sentence ()
   "Check sentences that are too long.
 Not implemented yet."
   (interactive)
-  (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-long-sentence))
+  (message "Not implemented yet."))
 
 (defconst copyedit-ja--dict-heading
-  '(("\\(^[■□▲△▼▽●○].*?$\\)" . "\\1")))
+  '(("\\(^#\\{1,6\\} .+$\\)" . "\\1")))
 
 (defun copyedit-ja-enumerate-heading ()
   "Enumerate headings.
-Not implemented yet."
+(Markdown ATX headings are supported for now.)"
   (interactive)
   (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-heading))
 
@@ -465,20 +453,17 @@ Not implemented yet."
   (interactive)
   (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-multiple-negative))
 
-(defconst copyedit-ja--dict-word-by-character-type
-  '(("\\(\\)" . "\\1")))
-
 (defun copyedit-ja-enumerate-word-by-character-type ()
   "Enumerate words by character type.
 Not implemented yet."
   (interactive)
-  (copyedit-ja--grep-buffers-with-dict copyedit-ja--dict-word-by-character-type))
+  (message "Not implemented yet."))
 
 (defun copyedit-ja-show-text-stat ()
   "Show text statistics.
 Not implemented yet."
   (interactive)
-  "Not implemented yet.")
+  (message "Not implemented yet."))
 
 ;; ----------------------------------------------------------------
 ;; more applications
