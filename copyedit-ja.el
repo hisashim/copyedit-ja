@@ -214,7 +214,6 @@ Note:
 
 (defun copyedit-ja--grep-buffers-with-dict (dict)
   "Search REGEXP in buffers with DICT."
-  (interactive)
   (let ((regexp-src (copyedit-ja--regexp-opt-re (mapcar 'car dict))))
      (moccur regexp-src t)))
 
