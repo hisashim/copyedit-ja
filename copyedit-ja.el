@@ -267,7 +267,7 @@ Note:
 
 (defun copyedit-ja-normalize-paren-width-region (start end &optional paranoid)
   "Replace half-width parens in region with full-width ones."
-  (interactive "Pr")
+  (interactive "r\nP")
   (save-excursion
     (save-restriction
       (if paranoid
