@@ -10,32 +10,32 @@
              (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
                             (copyedit-ja--group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
 
-(ert-deftest test-copyedit-ja--wrapup-group-charclass ()
+(ert-deftest test-copyedit-ja--regexp-opt-re-or-charclass ()
              (should (equal "[ab]"
-                            (copyedit-ja--wrapup-group '("a" "b")))))
+                            (copyedit-ja--regexp-opt-re-or '("a" "b")))))
 
-(ert-deftest test-copyedit-ja--wrapup-group-or ()
+(ert-deftest test-copyedit-ja--regexp-opt-re-or-or ()
              (should (equal "a\\|bc"
-                            (copyedit-ja--wrapup-group '("a" "bc")))))
+                            (copyedit-ja--regexp-opt-re-or '("a" "bc")))))
 
-(ert-deftest test-copyedit-ja--wrapup-group-or-dot ()
+(ert-deftest test-copyedit-ja--regexp-opt-re-or-or-dot ()
              (should (equal "a\\|."
-                            (copyedit-ja--wrapup-group '("a" ".")))))
+                            (copyedit-ja--regexp-opt-re-or '("a" ".")))))
 
 (ert-deftest test-copyedit-ja--regexp-opt-re ()
              (should (equal "[ab]\\|.\\|cd+"
                             (copyedit-ja--regexp-opt-re '("a" "b" "." "cd+")))))
 
-(ert-deftest test-copyedit-ja--assoc-exact-match ()
+(ert-deftest test-copyedit-ja--assoc-re-exact ()
   (let ((dict '(("foobar" . "Foobar")
                 ("foo" . "Foo")
                 ("bar" . "Bar")
                 ("[a-z]+" . "OTHER"))))
-    (should (equal '("foobar" . "Foobar") (copyedit-ja--assoc-exact-match "foobar" dict)))
-    (should (equal '("foo" . "Foo") (copyedit-ja--assoc-exact-match "foo" dict)))
-    (should (equal '("bar" . "Bar") (copyedit-ja--assoc-exact-match "bar" dict)))
-    (should (equal '("[a-z]+" . "OTHER") (copyedit-ja--assoc-exact-match "baz" dict)))
-    (should (equal nil (copyedit-ja--assoc-exact-match "123" dict)))))
+    (should (equal '("foobar" . "Foobar") (copyedit-ja--assoc-re-exact "foobar" dict)))
+    (should (equal '("foo" . "Foo") (copyedit-ja--assoc-re-exact "foo" dict)))
+    (should (equal '("bar" . "Bar") (copyedit-ja--assoc-re-exact "bar" dict)))
+    (should (equal '("[a-z]+" . "OTHER") (copyedit-ja--assoc-re-exact "baz" dict)))
+    (should (equal nil (copyedit-ja--assoc-re-exact "123" dict)))))
 
 (ert-deftest test-copyedit-ja--sort-dict ()
   (let ((dict-unsorted '(("bar" . "Bar")
@@ -67,9 +67,9 @@
                                                                "ひらがな\n"
                                                                "-"))))
 
-(ert-deftest test-copyedit-ja--zip-naive ()
+(ert-deftest test-copyedit-ja--zip-lists ()
   (should (equal '((1 4) (2 5) (3 nil))
-                 (copyedit-ja--zip-naive '(1 2 3) '(4 5)))))
+                 (copyedit-ja--zip-lists '(1 2 3) '(4 5)))))
 
 (ert-deftest test-copyedit-ja--translate ()
   (should (equal "A"
