@@ -24,6 +24,7 @@
 ;;     https://ci.nii.ac.jp/naid/110003743558
 
 (require 'cl-lib)
+(require 'color-moccur)
 
 ;; ------------------------------------------------------------------------
 ;; utility: perform-replace-using-dict
