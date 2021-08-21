@@ -654,21 +654,25 @@ Not implemented yet."
                                                start end))))
 
 (defconst copyedit-ja--dict-direct-distal
-  (let ((rx-grp "\\(\\\\(.*\\\\)\\)\\(.*\\)")
-        (rx-ref "\\(\\\\[0-9]\\)\\(.*\\)"))
-    (mapcar (lambda (pair)
-              (let* ((key (car pair))
-                     (val (cdr pair))
-                     (kparts (if (string-match rx-grp key)
-                                 (cons (match-string 1 key) (match-string 2 key))
-                               (cons "" key)))
-                     (vparts (if (string-match rx-ref val)
-                                 (cons (match-string 1 val) (match-string 2 val))
-                               (cons "" val)))
-                     (src (concat (car kparts) (cdr vparts)))
-                     (tgt (concat (car vparts) (cdr kparts))))
-                (cons src tgt)))
-            copyedit-ja--dict-distal-direct)))
+  (let* ((re-grp "\\(\\\\(.*\\\\)\\)\\(.*\\)")
+         (re-ref "\\(\\\\[0-9]\\)\\(.*\\)")
+         (swap-pair-considering-regexp
+          (lambda (pair)
+            (let* ((key (car pair))
+                   (val (cdr pair))
+                   (kparts (if (string-match re-grp key)
+                               (cons (match-string 1 key) (match-string 2 key))
+                             (cons "" key)))
+                   (vparts (if (string-match re-ref val)
+                               (cons (match-string 1 val) (match-string 2 val))
+                             (cons "" val)))
+                   (src (concat (car kparts) (cdr vparts)))
+                   (tgt (concat (car vparts) (cdr kparts))))
+              (cons src tgt)))))
+    (mapcar swap-pair-considering-regexp
+            copyedit-ja--dict-distal-direct))
+  "Dictionary to translate direct style (jotai, da/dearu) to
+  distal style (keitai, desu/masu).")
 
 (defun copyedit-ja-check-dadearu-to-desumasu ()
   "Check style of Japanese text if direct (da/dearu)."
