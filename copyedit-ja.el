@@ -83,18 +83,19 @@ this function accepts regexps as its input.
 Example:
   '(\"a\" \"b\" \".\" \"cd+\") => \"[ab]\\|.\\|cd+\""
   (let* ((regexp-charclassable
-         (lambda (str) (and (stringp str)
-                            (= 1 (length str))
-                            (equal str (regexp-quote str)))))
+          (lambda (str) (and (stringp str)
+                             (= 1 (length str))
+                             (equal str (regexp-quote str)))))
          (regexp-or
           ;; '("a" "b") => "a\\|b"
           (lambda (strs) (mapconcat #'identity strs "\\|")))
-         (grouped (copyedit-ja--group-sequence ls
-                                   :key (lambda (a b)
-                                          (cl-every regexp-charclassable
-                                                    (list a b)))))
-         (wrapped-up (mapcar #'copyedit-ja--regexp-opt-re-or
-                             grouped))
+         (grouped
+          (copyedit-ja--group-sequence ls
+                                       :key (lambda (a b)
+                                              (cl-every regexp-charclassable
+                                                        (list a b)))))
+         (wrapped-up
+          (mapcar #'copyedit-ja--regexp-opt-re-or grouped))
          (or-ed (funcall regexp-or wrapped-up)))
     or-ed))
 
@@ -216,7 +217,7 @@ Note:
   "Search buffers using DICT, which is an associative list of
 regexp to replacement."
   (let ((regexp-src (copyedit-ja--regexp-opt-re (mapcar 'car dict))))
-     (moccur regexp-src t)))
+    (moccur regexp-src t)))
 
 (defun copyedit-ja--zip-lists (&rest seq)
   "Zip lists, e.g. '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))"
@@ -228,7 +229,7 @@ regexp to replacement."
   (let* ((counterpart (cdr (assoc s dict))))
     (if counterpart
         counterpart
-        s)))
+      s)))
 
 (defun copyedit-ja--filter-region (f start end)
   (let* ((src (buffer-substring start end))
@@ -256,14 +257,14 @@ regexp to replacement."
   (interactive "P")
   (if paranoid
       (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width-paranoid)
-      (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width)))
+    (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width)))
 
 (defun copyedit-ja-normalize-paren-width (&optional paranoid)
   "Replace half-width parens with full-width ones."
   (interactive "P")
   (if paranoid
       (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width-paranoid)
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width)))
+    (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width)))
 
 (defun copyedit-ja-normalize-paren-width-region (start end &optional paranoid)
   "Replace half-width parens in region with full-width ones."
@@ -273,8 +274,8 @@ regexp to replacement."
       (if paranoid
           (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width-paranoid
                                                    start end)
-          (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width
-                                                   start end)))))
+        (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width
+                                                 start end)))))
 
 (defconst copyedit-ja--dict-paren-matching
   '(("\\(([^)]*?）\\)" . "\\1")

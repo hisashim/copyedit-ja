@@ -7,24 +7,24 @@
 (require 'copyedit-ja)
 
 (ert-deftest test-copyedit-ja--group-sequence ()
-             (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
-                            (copyedit-ja--group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
+  (should (equal '((1 1 1) (2) (3) (4 4) (2 2) (3) (1 1) (3))
+                 (copyedit-ja--group-sequence '(1 1 1 2 3 4 4 2 2 3 1 1 3)))))
 
 (ert-deftest test-copyedit-ja--regexp-opt-re-or-charclass ()
-             (should (equal "[ab]"
-                            (copyedit-ja--regexp-opt-re-or '("a" "b")))))
+  (should (equal "[ab]"
+                 (copyedit-ja--regexp-opt-re-or '("a" "b")))))
 
 (ert-deftest test-copyedit-ja--regexp-opt-re-or-or ()
-             (should (equal "a\\|bc"
-                            (copyedit-ja--regexp-opt-re-or '("a" "bc")))))
+  (should (equal "a\\|bc"
+                 (copyedit-ja--regexp-opt-re-or '("a" "bc")))))
 
 (ert-deftest test-copyedit-ja--regexp-opt-re-or-or-dot ()
-             (should (equal "a\\|."
-                            (copyedit-ja--regexp-opt-re-or '("a" ".")))))
+  (should (equal "a\\|."
+                 (copyedit-ja--regexp-opt-re-or '("a" ".")))))
 
 (ert-deftest test-copyedit-ja--regexp-opt-re ()
-             (should (equal "[ab]\\|.\\|cd+"
-                            (copyedit-ja--regexp-opt-re '("a" "b" "." "cd+")))))
+  (should (equal "[ab]\\|.\\|cd+"
+                 (copyedit-ja--regexp-opt-re '("a" "b" "." "cd+")))))
 
 (ert-deftest test-copyedit-ja--assoc-re-exact ()
   (let ((dict '(("foobar" . "Foobar")
@@ -56,16 +56,16 @@
     (should (equal "123" (copyedit-ja--find-replacement "123" dict)))))
 
 (ert-deftest test-copyedit-ja--shell-command-string-ascii ()
-             (should (equal "bar"
-                            (copyedit-ja--shell-command-string "grep"
-                                                               "foo\nbar\n"
-                                                               "--color" "b"))))
+  (should (equal "bar"
+                 (copyedit-ja--shell-command-string "grep"
+                                                    "foo\nbar\n"
+                                                    "--color" "b"))))
 
 (ert-deftest test-copyedit-ja--shell-command-string-unicode ()
-             (should (equal "/dev/stdin: UTF-8 Unicode text"
-                            (copyedit-ja--shell-command-string "file"
-                                                               "ひらがな\n"
-                                                               "-"))))
+  (should (equal "/dev/stdin: UTF-8 Unicode text"
+                 (copyedit-ja--shell-command-string "file"
+                                                    "ひらがな\n"
+                                                    "-"))))
 
 (ert-deftest test-copyedit-ja--zip-lists ()
   (should (equal '((1 4) (2 5) (3 nil))
@@ -76,8 +76,8 @@
                  (copyedit-ja--translate "a" '(("a" . "A"))))))
 
 (ert-deftest test-copyedit-ja--katakana-to-hiragana ()
-             (should (equal "a1ひらかた漢字"
-                            (copyedit-ja--katakana-to-hiragana "a1ひらカタ漢字"))))
+  (should (equal "a1ひらかた漢字"
+                 (copyedit-ja--katakana-to-hiragana "a1ひらカタ漢字"))))
 
 (ert-deftest test-copyedit-ja--katakana-to-hiragana-thorough ()
   (let ((hira (concat "ぁあぃいぅうぇえぉお"
@@ -105,15 +105,15 @@
     (should (equal hira (copyedit-ja--katakana-to-hiragana kata)))))
 
 (ert-deftest test-copyedit-ja--hiragana-to-katakana ()
-             (should (equal "a1ヒラカタ漢字"
-                            (copyedit-ja--hiragana-to-katakana "a1ひらカタ漢字"))))
+  (should (equal "a1ヒラカタ漢字"
+                 (copyedit-ja--hiragana-to-katakana "a1ひらカタ漢字"))))
 
 (ert-deftest test-copyedit-ja--get-reading-katakana ()
-             (should (equal "a1ヒラカタカンジ"
-                            (copyedit-ja--get-reading-katakana "a1ひらカタ漢字"))))
+  (should (equal "a1ヒラカタカンジ"
+                 (copyedit-ja--get-reading-katakana "a1ひらカタ漢字"))))
 
 (ert-deftest test-copyedit-ja--get-reading-hiragana ()
-             (should (equal "a1ひらかたかんじ"
-                            (copyedit-ja--get-reading-hiragana "a1ひらカタ漢字"))))
+  (should (equal "a1ひらかたかんじ"
+                 (copyedit-ja--get-reading-hiragana "a1ひらカタ漢字"))))
 
 (ert-run-tests-batch-and-exit)
