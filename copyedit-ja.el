@@ -454,11 +454,73 @@ Not implemented yet."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-multiple-negatives))
 
-(defun copyedit-ja-enumerate-words-by-character-type ()
-  "Enumerate words by character type.
-Not implemented yet."
+(defconst copyedit-ja--dict-word-by-character-type-kanji
+  (let ((pat
+         (concat
+          "["
+          "\U00004e00-\U00009ffc" ; CJK Unified Ideographs
+          "\U00003400-\U00004dbf" ; CJK Unified Ideographs Extension A
+          "\U00020000-\U0002a6dd" ; CJK Unified Ideographs Extension B
+          "\U0002a700-\U0002b734" ; CJK Unified Ideographs Extension C
+          "\U0002b740-\U0002b81d" ; CJK Unified Ideographs Extension D
+          "\U0002b820-\U0002cea1" ; CJK Unified Ideographs Extension E
+          "\U0002ceb0-\U0002ebe0" ; CJK Unified Ideographs Extension F
+          "\U00030000-\U0003134a" ; CJK Unified Ideographs Extension G
+          "\U0000f900-\U0000faff" ; CJK Compatibility Ideographs
+          "\U0002f800-\U0002fa1f" ; CJK Compatibility Ideographs Supplement
+          "\U00002e80-\U00002ef3" ; CJK Radicals Supplement
+          "\U00002f00-\U00002fd5" ; Kangxi Radicals
+          "\u3005" ; Ideographic Iteration Mark (Odoriji) (々)
+          "\u3006" ; Ideographic Closing Mark (Shime) (〆)
+          "\u3007" ; Ideographic Number Zero (Kanji Zero) (〇)
+          "\u303b" ; Vertical Ideographic Iteration Mark (Odoriji) (〻)
+          "]+")))
+    `((,pat . "\\1")))
+  "Dictionary to find kanji.")
+
+(defun copyedit-ja-enumerate-words-by-character-type-kanji ()
+  "Enumerate words by character type (kanji)."
   (interactive)
-  (message "Not implemented yet."))
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-word-by-character-type-kanji))
+
+(defconst copyedit-ja-dict--word-by-character-type-hiragana
+  (let ((pat
+         (concat
+          "["
+          "\u3041-\u3096\u3099-\u309f" ; Hiragana Letters (Hiragana)
+          "\u30a0" ; Katakana-Hiragana Double Hyphen (Katakana)
+          "\u30fc" ; Katakana-Hiragana Prolonged Soundmark
+          "\U0001b001" ; Hiragana Letter Archaic Ye (Kana Supplement)
+          "\U0001b002-\U0001b0ff" ; Hentaigana (Kana Supplement)
+          "\U0001b100-\U0001b11e" ; Hentaigana (Kana Extended A)
+          "\U0001b150-\U0001b152" ; Historic small hiragana letters (Small Kana Extension)
+          "]+")))
+    `((,pat . "\\1")))
+  "Dictionary to find hiragana.")
+
+(defun copyedit-ja-enumerate-word-by-character-type-hiragana ()
+  "Enumerate words by character type (hiragana)."
+  (interactive)
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja-dict--word-by-character-type-hiragana))
+
+(defconst copyedit-ja-dict--word-by-character-type-katakana
+  (let ((pat
+         (concat
+          "["
+          "\u30a1-\u30ff" ; Katakana Letters (Katakana)
+          "\u30a0" ; Katakana-Hiragana Double Hyphen (Katakana)
+          "\u31f0-\u31ff" ; Phonetic extensions for Ainu (Katakana Phonetic Extensions)
+          "\U0001b000" ; Katakana Letter Archaic E (Kana Supplement)
+          "\U0001b164-\U0001b167" ; Historic small katakana letters (Small Kana Extension)
+          "\uff65-\uff9f" ; Halfwidth Katakana variants (Halfwidth and Fullwidth Forms)
+          "]+")))
+    `((,pat . "\\1")))
+  "Dictionary to find katakana.")
+
+(defun copyedit-ja-enumerate-word-by-character-type-katakana ()
+  "Enumerate words by character type (katakana)."
+  (interactive)
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja-dict--word-by-character-type-katakana))
 
 (defun copyedit-ja-show-text-stats ()
   "Show text statistics.
