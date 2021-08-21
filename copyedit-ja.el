@@ -1,33 +1,58 @@
-;; -*- encoding: utf-8 -*-
-;; Japanese copyediting commands for Emacs
-;; Copyright (c) 2008-2019 Hisashi Morita
+;; copyedit-ja.el --- Copyediting tools for Japanese text
+;; -*- encoding: utf-8; -*-
+;;
+;;; Commentary:
+;;
+;; Copyedit-ja: Copyediting tools for Japanese text
+;; Copyright (c) 2008-2021 Hisashi Morita
 ;; License: Public Domain
 ;;
-;; Usage example:
-;;   1. check
-;;     M-x copyedit-ja-check-typo-particle
-;;   2. edit
-;;     M-x copyedit-ja-normalize-typo-particle
+;; Usage Example:
+;;   1. Check possible typos.
+;;     M-x copyedit-ja-check-typo-particles
+;;   2. Edit them.
+;;     M-x copyedit-ja-normalize-typo-particles
 ;;
 ;; Requirements:
-;;   * MeCab: Yet another Japanese morphological analyzer
+;;   * color-moccur: multi-buffer occur (grep) mode
+;;     - v2.71 (MELPA):
+;;       https://melpa.org/#/color-moccur
+;;       (source: https://github.com/myuhe/color-moccur.el)
+;;     - v2.73 from the original author:
+;;       https://web.archive.org/web/20180527232131/www.bookshelf.jp/elc/color-moccur.el
+;;   * MeCab: Yet another Japanese morphological analyzer (optional)
 ;;     - https://github.com/taku910/mecab
-;;   * color-moccur.el
-;;     - v2.73: https://web.archive.org/web/20180527232131/www.bookshelf.jp/elc/color-moccur.el
-;;     - v2.71: https://www.emacswiki.org/emacs/color-moccur.el
-;;     - fork from v2.71: https://github.com/myuhe/color-moccur.el
 ;;
-;; Bibliography:
-;;   * Kurata Masanori, Suganuma Akira, Ushijima Kazuo,
+;; How to install:
+;;   1. Install requirements.
+;;     - Install color-moccur using Emacs package manager.
+;;       (See https://melpa.org for instructions.)
+;;     - Install MeCab and its UTF-8 dictionary, e.g.
+;;       $ sudo apt install mecab mecab-ipadic-utf8
+;;   2. Install copyedit-ja.
+;;     - Put copyedit-ja.el somewhere in your load-path, e.g.
+;;       $ cp copyedit-ja.el ~/.emacs.d/lisp/
+;;   3. Configure copyedit-ja.
+;;     - If you prefer, load copyedit-ja on startup, e.g.
+;;       $ echo "(require 'copyedit-ja)" >> ~/emacs.d/init.el
+;;
+;; References:
+;;   * [KSU1989]
+;;     Masanori Kurata, Akira Suganuma, Kazuo Ushijima,
 ;;     "Development of a System of Writing Tools for Japanese Documents on
-;;      a Personal Computer."
-;;     https://ci.nii.ac.jp/naid/110003743558
+;;     a Personal Computer.",
+;;     Computer Software, Vol. 6, No. 4 (1989), pp. 55-67.
+;;     - https://ci.nii.ac.jp/naid/110003743558
+;;     - https://www.jstage.jst.go.jp/article/jssst/6/4/6_4_373/_article/-char/ja
+;;   * [Urayama1998]
+;;     Takeshi Urayama, Denshi Henshu no Susume: sed no Katsuyou
+;;     (E-editing using Sed), 1998, Doseisha.
 
 (require 'cl-lib)
 (require 'color-moccur)
 
 ;; ------------------------------------------------------------------------
-;; utility: perform-replace-using-dict
+;; Utilities: perform-replace-using-dict
 
 (defun copyedit-ja--group-sequence (seq &optional &key key)
   "Group SEQ elements to lists of same sucessive elements.
@@ -211,7 +236,7 @@ Example:
                        ))))
 
 ;; ------------------------------------------------------------------------
-;; utility: shell-command-string
+;; Utilities: shell-command-string
 
 (defun copyedit-ja--shell-command-string (cmd input &rest opts)
   "Run CMD (with OPTS) as sub-process with INPUT for stdin.
@@ -240,7 +265,7 @@ Note:
                                 (buffer-string)))))
 
 ;; ------------------------------------------------------------------------
-;; misc utilities
+;; Miscllaneous utilities
 
 (defun copyedit-ja--grep-buffers-using-dict (dict)
   "Search buffers for DICT keys.
@@ -290,8 +315,7 @@ Note:
       (insert replacement))))
 
 ;; ------------------------------------------------------------------------
-;; applications
-;; inspired by Suikou
+;; Checking parentheses (inspired by [KSU1989])
 
 (defconst copyedit-ja--dict-paren-width
   '(("\\(\\cj\\) ?(\\([^()]*?\\)) ?\\(\\cj\\)" . "\\1（\\2）\\3")
@@ -356,6 +380,9 @@ different width).")
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-matching))
 
+;; ------------------------------------------------------------------------
+;; Checking punctuation symbols (inspired by [KSU1989])
+
 (defconst copyedit-ja--dict-punctuation-tenmaru
   '(("\\(\\cj\\),"   . "\\1、")
     ("\\(\\cj\\)\\." . "\\1。")
@@ -391,6 +418,9 @@ to full-width commas/periods.")
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-punctuation-kanpiri))
 
+;; ------------------------------------------------------------------------
+;; Checking hiragana-katakana prolonged sound marks (inspired by [KSU1989])
+
 (defconst copyedit-ja--dict-suspicious-prolonged-sound-marks
   '(("\\([^ァ-ンヴヵヶ]ー\\)" . "\\1"))
   "Dictionary to find irregular usage of prolonged sound marks (onbiki).
@@ -406,6 +436,9 @@ although it is not the case with literature, etc.)")
   "Normalize suspicious uses of katakana-hiragana prolonged sound marks (onbiki)."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-suspicious-prolonged-sound-marks))
+
+;; ------------------------------------------------------------------------
+;; Checking typos (inspired by [KSU1989])
 
 (defconst copyedit-ja--dict-typo-particles
   '(("\\([てにをはのが]\\)\\1" . "\\1"))
@@ -424,6 +457,9 @@ although it is not the case with literature, etc.)")
 (defconst copyedit-ja--dict-passive-voices
   '(("\\([あかさたなはまやらわ]ら?れ\\)" . "\\1"))
   "Dictionary to find passive voices (judoutai).")
+
+;; ------------------------------------------------------------------------
+;; Checking writing style (inspired by [KSU1989])
 
 (defun copyedit-ja-check-passive-voices ()
   "Find passive voice, which are sometimes misused."
@@ -513,6 +549,9 @@ Not implemented yet."
 Not implemented yet."
   (interactive)
   (message "Not implemented yet."))
+
+;; ------------------------------------------------------------------------
+;; Document analysis (inspired by [KSU1989])
 
 (defconst copyedit-ja--dict-headings
   '(("\\(^#\\{1,6\\} .+$\\)" . "\\1"))
@@ -617,7 +656,7 @@ Not implemented yet."
   (message "Not implemented yet."))
 
 ;; ----------------------------------------------------------------
-;; more applications
+;; Removing extraneous spaces
 
 (defconst copyedit-ja--dict-unwanted-spaces
   `(("\\([0-9A-Za-z]\\) \\(\\cC\\|\\cK\\|\\cH\\)" . "\\1\\2")
@@ -641,6 +680,9 @@ Not implemented yet."
     (save-restriction
       (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-unwanted-spaces
                                                start end))))
+
+;; ----------------------------------------------------------------
+;; Normalizing character widths
 
 (defconst copyedit-ja--dict-alnum-fullwidth-halfwidth
   '(("０" . "0")  ("１" . "1")  ("２" . "2")  ("３" . "3")  ("４" . "4")
@@ -685,8 +727,8 @@ to their halfwidth counterparts."
                                                start end))))
 
 ;; ----------------------------------------------------------------
-;; Japanese style converter
-;; dictionary initially based on Takeshi Urayama "e-editing using sed"
+;; Converting style between distal and direct
+;; (Dictionary initially based on [Urayama1998].)
 
 (defconst copyedit-ja--dict-distal-direct
   '(("でしょう"      . "だろう")
@@ -854,7 +896,7 @@ distal style (keitai, desu/masu).")
                                                start end))))
 
 ;; ----------------------------------------------------------------
-;; katakana and hiragana conversion
+;; Converting katakana and hiragana
 
 (defconst copyedit-ja--katakana
   (let ((str (concat "ァ ア ィ イ ゥ ウ ェ エ ォ オ "
@@ -924,7 +966,7 @@ See `copyedit-ja--dict-word-by-character-type-hiragana'.")
   (copyedit-ja--filter-region #'copyedit-ja--hiragana-to-katakana start end))
 
 ;; ----------------------------------------------------------------
-;; Aquire reading of Japanese text
+;; Acquiring reading of Japanese text
 
 (defun copyedit-ja--get-reading-katakana (str)
   "Acquire reading of Japanese text in STR in katakana using MeCab."
@@ -935,7 +977,7 @@ See `copyedit-ja--dict-word-by-character-type-hiragana'.")
   (copyedit-ja--katakana-to-hiragana (copyedit-ja--get-reading-katakana str)))
 
 ;; ----------------------------------------------------------------
-;; hiragana, katakna, and kanji to katakana/hiragana conversion
+;; Converting hiragana, katakna, and kanji to katakana/hiragana
 
 (defun copyedit-ja-kanakanji-to-katakana-region (start end)
   "Convert hiragana, katakna, and kanji in region between START and END
@@ -950,7 +992,7 @@ to hiragana."
   (copyedit-ja--filter-region #'copyedit-ja--get-reading-hiragana start end))
 
 ;; ----------------------------------------------------------------
-;; miscellaneous applications
+;; Miscellaneous applications
 
 (defconst copyedit-ja--dict-notation-hou
   '(("\\([^一両双前後左右上下]\\|^\\)\\(方\\)\\([^法式向面]\\|$\\)" .
@@ -984,3 +1026,5 @@ but in kanji (U+65B9).
 ;; ----------------------------------------------------------------
 
 (provide 'copyedit-ja)
+
+;;; copyedit-ja.el ends here

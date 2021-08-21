@@ -1,6 +1,6 @@
 ;; -*- encoding: utf-8 -*-
 ;; tests for copyedit-ja
-;; Copyright (c) 2010-2011 Hisashi Morita
+;; Copyright (c) 2010-2021 Hisashi Morita
 ;; License: Public Domain
 
 (require 'ert)
