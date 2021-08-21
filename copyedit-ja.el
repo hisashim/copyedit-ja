@@ -30,12 +30,13 @@
 ;; utility: perform-replace-using-dict
 
 (defun copyedit-ja--group-sequence (seq &optional &key key)
-  "Group a sequence of elements to a sequence of groups of same
-sucessive elements.
+  "Group SEQ elements to lists of same sucessive elements.
+&KEY is used for comparing elements if given.
+
 Example:
-  '(a a a) => '((a a a))
-  '(a a b) => '((a a) (b))
-  '(a a b a a) => '((a a) (b) (a a))"
+  (copyedit-ja--group-sequence '(a a a))    ;=> '((a a a))
+  (copyedit-ja--group-sequence '(a a b))    ;=> '((a a) (b))
+  (copyedit-ja--group-sequence '(a a b a a) ;=> '((a a) (b) (a a))"
   (let* ((push
           ;; '(a b) c => '(a b c)
           (lambda (ls elem) (reverse (cons elem (reverse ls)))))
@@ -59,11 +60,13 @@ Example:
                :initial-value '())))
 
 (defun copyedit-ja--regexp-opt-re-or (seq)
-  "Group together regular characters to a charclass, strings and
-regexp special characters to an OR expression.
+  "Group together string sequence SEQ.
+Regular characters are grouped to a character class, while regexp special
+characters and longer strings are grouped to an \"or\" expression.
+
 Example:
-  '(\"a\" \"b\") => \"[ab]\"
-  '(\"a\" \".\") => \"a\\|.\""
+  (copyedit-ja--regexp-opt-re-or '(\"a\" \"b\")) ;=> \"[ab]\"
+  (copyedit-ja--regexp-opt-re-or '(\"a\" \".\")) ;=> \"a\\|.\""
   (let ((regexp-charclassable
          (lambda (str) (and (stringp str)
                             (= 1 (length str))
@@ -79,10 +82,11 @@ Example:
       (funcall regexp-or seq))))
 
 (defun copyedit-ja--regexp-opt-re (ls)
-  "Return a (naively) optimized regexp. Unlike standard `regexp-opt',
-this function accepts regexps as its input.
+  "Generate a (naively) optimized regexp from string/regexp list LS.
+Unlike standard `regexp-opt', this function accepts regexps as its input.
+
 Example:
-  '(\"a\" \"b\" \".\" \"cd+\") => \"[ab]\\|.\\|cd+\""
+  (copyedit-ja--regexp-opt-re '(\"a\" \"b\" \".\" \"cd+\")) ;=> \"[ab]\\|.\\|cd+\""
   (let* ((regexp-charclassable
           (lambda (str) (and (stringp str)
                              (= 1 (length str))
@@ -101,8 +105,16 @@ Example:
     or-ed))
 
 (defun copyedit-ja--assoc-re-exact (str dict)
-  "Return an element from DICT which exactly matches STR.
-DICT must consist of regexp and replacement string pairs (re . repstr)."
+  "Return the first entry of DICT whose key exactly matches STR.
+DICT keys are regexps, while values are strings or functions.
+
+Example:
+  (copyedit-ja--assoc-re-exact
+    \"foo\"
+    '((\"foobar\" . \"Foobar\")
+      (\"bar\"    . \"Bar\")
+      (\"[a-z]+\" . (lambda (s) (upcase s)))))
+  ;=> (\"[a-z]+\" . (lambda (s) (upcase s)))"
   (cl-assoc str dict
             :test (lambda (s r)
                     (let ((external-md (match-data)))
@@ -111,8 +123,18 @@ DICT must consist of regexp and replacement string pairs (re . repstr)."
                         (set-match-data external-md))))))
 
 (defun copyedit-ja--sort-dict (dict)
-  "Sort DICT by key type (regular strings to regexps) and by key
-length (long to short)."
+  "Sort DICT by key type (regular strings first, regexps last)
+and by key length (longest first and shortest last).
+
+Example:
+  (copyedit-ja--sort-dict
+    '((\"bar\"    . \"Bar\")
+      (\"[a-z]+\" . (lambda (s) (upcase s)))
+      (\"foobar\" . \"Foobar\")))
+  ;=>
+    '((\"foobar\" . \"Foobar\")
+      (\"bar\"    . \"Bar\")
+      (\"[a-z]+\" . (lambda (s) (upcase s))))"
   (let ((strings-to-regexps-and-long-to-short
          (lambda (pair-a pair-b)
            (let* ((key-a (car pair-a))
@@ -127,18 +149,20 @@ length (long to short)."
     (sort dict strings-to-regexps-and-long-to-short)))
 
 (defun copyedit-ja--find-replacement (str dict)
-  "Return DICT value whose key exactly matches STR. If none found,
-return STR.
+  "Return DICT value whose key exactly matches STR.
+If none found, return STR.
 
 DICT keys are regexps (including plain strings), while values are
 strings or functions.  DICT must be sorted by key type (plain
 strings to regexps) and by key length (long to short).
 
 Example:
-  '((\"foobar\" . \"Foobar\")
-    (\"bar\"    . \"Bar\")
-    (\"[a-z]+\" . (lambda (s) (upcase s)))
-    ...)"
+  (copyedit-ja--find-replacement
+    \"foo\"
+    '((\"foobar\" . \"Foobar\")
+      (\"bar\"    . \"Bar\")
+      (\"[a-z]+\" . (lambda (s) (upcase s)))))
+  ;=> \"FOO\""
   (let* ((case-fold-search nil)
          (matching-entry (copyedit-ja--assoc-re-exact str dict)))
     (if matching-entry
@@ -162,11 +186,14 @@ Example:
       str)))
 
 (defun copyedit-ja--perform-replace-using-dict (dict &optional start end)
-  "Invoke perform-replace using DICT.
-Usage:
-  (copyedit-ja--perform-replace-using-dict '((REGEXP1 . REPLACEMENT1)
-                                             (REGEXP2 . REPLACEMENT2) ...)
-                                           &optional START END)"
+  "Invoke `perform-replace' using DICT on region between START and END.
+
+Example:
+  (copyedit-ja--perform-replace-using-dict
+    '((REGEXP1 . REPLACEMENT1)
+      (REGEXP2 . REPLACEMENT2)
+      ...)
+    &optional START END)"
   (let* ((dict-sorted (copyedit-ja--sort-dict dict))
          (re (copyedit-ja--regexp-opt-re (mapcar #'car dict-sorted))))
     (save-mark-and-excursion
@@ -187,7 +214,8 @@ Usage:
 ;; utility: shell-command-string
 
 (defun copyedit-ja--shell-command-string (cmd input &rest opts)
-  "Run CMD as sub-process with INPUT for stdin. Return stdout as string.
+  "Run CMD (with OPTS) as sub-process with INPUT for stdin.
+Return stdout as string.
 
 Example:
   (copyedit-ja--shell-command-string \"grep\" STRING \"-in\")
@@ -195,7 +223,7 @@ Example:
 Note:
   If something gets wrong when dealing with non-ASCII strings,
   try setting character encoding explicitly, e.g.
-  (progn (prefer-coding-system 'utf-8-unix) ..."
+  (progn (prefer-coding-system 'utf-8-unix) ...)"
   (save-window-excursion
     (with-temp-buffer
       (if input (insert input) nil)
@@ -215,24 +243,46 @@ Note:
 ;; misc utilities
 
 (defun copyedit-ja--grep-buffers-using-dict (dict)
-  "Search buffers using DICT, which is an associative list of
-regexp to replacement."
+  "Search buffers for DICT keys.
+
+Example:
+  (copyedit-ja--grep-buffers-using-dict
+    '((\"foobar\" . \"Foobar\")
+      (\"bar\"    . \"Bar\")
+      (\"[a-z]+\" . (lambda (s) (upcase s)))))"
   (let ((regexp-src (copyedit-ja--regexp-opt-re (mapcar 'car dict))))
     (moccur regexp-src t)))
 
 (defun copyedit-ja--zip-lists (&rest seq)
-  "Zip lists, e.g. '(1 2 3) '(4 5) => '((1 4) (2 5) (3 nil))"
+  "Zip SEQ of lists and return a list.
+
+Example:
+  (copyedit-ja--zip-lists '(1 2 3) '(4 5)) ;=> '((1 4) (2 5) (3 nil))"
   (if (cl-every #'null (mapcar 'car seq))
       '()
     (cons (mapcar 'car seq) (apply #'copyedit-ja--zip-lists (mapcar 'cdr seq)))))
 
-(defun copyedit-ja--translate (s dict)
-  (let* ((counterpart (cdr (assoc s dict))))
+(defun copyedit-ja--translate (str dict)
+  "Return a DICT value corresponding to STR.
+If no matching key is found, return the original STR.
+
+Example:
+  (copyedit-ja--translate
+   \"foo\"
+   '((\"foo\" . \"Foo\")
+     (\"bar\" . \"Bar\")))
+  ;=> \"Foo\"
+
+Note:
+  DICT keys and values must be plain strings. Regexps and functions are
+  not supported (yet)."
+  (let* ((counterpart (cdr (assoc str dict))))
     (if counterpart
         counterpart
-      s)))
+      str)))
 
 (defun copyedit-ja--filter-region (f start end)
+  "Destructively apply function F to the region between START and END."
   (let* ((src (buffer-substring start end))
          (replacement (funcall f src)))
     (progn
@@ -246,29 +296,46 @@ regexp to replacement."
 (defconst copyedit-ja--dict-paren-width
   '(("\\(\\cj\\) ?(\\([^()]*?\\)) ?\\(\\cj\\)" . "\\1（\\2）\\3")
     ("\\(\\cj\\) ?(" . "\\1（")
-    (") ?\\(\\cj\\)" . "）\\1")))
+    (") ?\\(\\cj\\)" . "）\\1"))
+  "Dictionary of half-width parentheses in Japanese text to their full-width
+counterparts.")
 
 (defconst copyedit-ja--dict-paren-width-paranoid
   '(("\\(^\\|\\cj\\) ?(\\([^()]*?\\)) ?\\(\\cj\\|$\\)" . "\\1（\\2）\\3")
     ("\\(^\\|\\cj\\) ?(" . "\\1（")
-    (") ?\\(\\cj\\|$\\)" . "）\\1")))
+    (") ?\\(\\cj\\|$\\)" . "）\\1"))
+  "Dictionary of half-width parentheses in Japanese text to their full-width
+counterparts.
+
+(Unlike `copyedit-ja--dict-paren-width', this dictionary matches parens
+at start-of-line and/or end-of-line as well, that is normally excessive.)")
 
 (defun copyedit-ja-check-paren-width (&optional paranoid)
-  "Check the widths of parenthesis characters considering contexts."
+  "Check the widths of parenthesis characters considering contexts.
+
+If PARANOID is non-nil, paranoiac dictionary
+`copyedit-ja--dict-paren-width-paranoid' is used."
   (interactive "P")
   (if paranoid
       (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width-paranoid)
     (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width)))
 
 (defun copyedit-ja-normalize-paren-width (&optional paranoid)
-  "Replace half-width parens with full-width ones."
+  "Replace half-width parentheses with their full-width counterparts.
+
+If PARANOID is non-nil, paranoiac dictionary
+`copyedit-ja--dict-paren-width-paranoid' is used."
   (interactive "P")
   (if paranoid
       (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width-paranoid)
     (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width)))
 
 (defun copyedit-ja-normalize-paren-width-region (start end &optional paranoid)
-  "Replace half-width parens in region with full-width ones."
+  "Replace half-width parentheses in region between START and END with
+their full-width counterparts.
+
+If PARANOID is non-nil, paranoiac dictionary
+`copyedit-ja--dict-paren-width-paranoid' is used."
   (interactive "r\nP")
   (save-excursion
     (save-restriction
@@ -280,7 +347,9 @@ regexp to replacement."
 
 (defconst copyedit-ja--dict-paren-matching
   '(("\\(([^)]*?）\\)" . "\\1")
-    ("\\(（[^）]*?)\\)" . "\\1")))
+    ("\\(（[^）]*?)\\)" . "\\1"))
+  "Dictionary of unmatched parentheses (opening and closing parens are of
+different width).")
 
 (defun copyedit-ja-check-paren-matching ()
   "Check if opening and closing parentheses match."
@@ -291,36 +360,42 @@ regexp to replacement."
   '(("\\(\\cj\\),"   . "\\1、")
     ("\\(\\cj\\)\\." . "\\1。")
     ("，" . "、")
-    ("．" . "。")))
+    ("．" . "。"))
+  "Dictionary to normalize punctuation characters: commas/periods to ten/maru.")
 
 (defconst copyedit-ja--dict-punctuation-kanpiri
   '(("\\(\\cj\\),"   . "\\1，")
     ("\\(\\cj\\)\\." . "\\1．")
     ("、" . "，")
-    ("。" . "．")))
+    ("。" . "．"))
+  "Dictionary to normalize punctuation characters: commas/periods and ten/maru
+to full-width commas/periods.")
 
 (defun copyedit-ja-check-punctuation-tenmaru ()
-  "Check irregular punctuation, preferring ten-maru."
+  "Check irregular punctuations, preferring ten-maru."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-punctuation-tenmaru))
 
 (defun copyedit-ja-check-punctuation-kanpiri ()
-  "Check irregular punctuation preferring kan-piri."
+  "Check irregular punctuations preferring kan-piri."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-punctuation-kanpiri))
 
 (defun copyedit-ja-normalize-punctuation-tenmaru ()
-  "Normalize irregular punctuation, preferring ten and maru."
+  "Normalize irregular punctuations, preferring ten and maru."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-punctuation-tenmaru))
 
 (defun copyedit-ja-normalize-punctuation-kanpiri ()
-  "Normalize irregular punctuation, preferring commas and dots."
+  "Normalize irregular punctuations, preferring commas and dots."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-punctuation-kanpiri))
 
 (defconst copyedit-ja--dict-suspicious-prolonged-sound-marks
-  '(("\\([^ァ-ンヴヵヶ]ー\\)" . "\\1")))
+  '(("\\([^ァ-ンヴヵヶ]ー\\)" . "\\1"))
+  "Dictionary to find irregular usage of prolonged sound marks (onbiki).
+(They typically appear after katakana characters in technical documents,
+although it is not the case with literature, etc.)")
 
 (defun copyedit-ja-check-suspicious-prolonged-sound-marks ()
   "Check suspicious uses of katakana-hiragana prolonged sound marks (onbiki)."
@@ -333,7 +408,8 @@ regexp to replacement."
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-suspicious-prolonged-sound-marks))
 
 (defconst copyedit-ja--dict-typo-particles
-  '(("\\([てにをはのが]\\)\\1" . "\\1")))
+  '(("\\([てにをはのが]\\)\\1" . "\\1"))
+  "Dictionary to find possible typos, namely successive particles (joshi).")
 
 (defun copyedit-ja-check-typo-particles ()
   "Check possible typos in particles."
@@ -346,7 +422,8 @@ regexp to replacement."
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-typo-particles))
 
 (defconst copyedit-ja--dict-passive-voices
-  '(("\\([あかさたなはまやらわ]ら?れ\\)" . "\\1")))
+  '(("\\([あかさたなはまやらわ]ら?れ\\)" . "\\1"))
+  "Dictionary to find passive voices (judoutai).")
 
 (defun copyedit-ja-check-passive-voices ()
   "Find passive voice, which are sometimes misused."
@@ -354,7 +431,8 @@ regexp to replacement."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-passive-voices))
 
 (defconst copyedit-ja--dict-demonstratives
-  '(("\\([こそあど][れの]\\)" . "\\1")))
+  '(("\\([こそあど][れの]\\)" . "\\1"))
+  "Dictionary to find demonstratives (shijishi).")
 
 (defun copyedit-ja-check-demonstratives ()
   "Find demonstratives (kore, soer, are, dore, etc.)."
@@ -371,7 +449,8 @@ regexp to replacement."
     ("\\(など\\)" . "\\1")
     ("\\([くぐ]らい\\)" . "\\1")
     ("\\(ばかり\\)" . "\\1")
-    ("\\(だって\\)" . "\\1")))
+    ("\\(だって\\)" . "\\1"))
+  "Dictionary to find modifier particles (toritateshi).")
 
 (defun copyedit-ja-check-toritate-focalizers ()
   "Find toritate focalizers."
@@ -379,7 +458,9 @@ regexp to replacement."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-toritate-focalizers))
 
 (defconst copyedit-ja--dict-conjunctive-particles-ga
-  '(("\\([ぁ-ん]が[、，]\\)" . "\\1")))
+  '(("\\([ぁ-ん]が[、，]\\)" . "\\1"))
+  "Dictionary to find conjunctive particles (setsuzoku joshi) \"ga\",
+which may introduce ambiguity.")
 
 (defun copyedit-ja-check-conjunctive-particles-ga ()
   "Find conjunctive particle \"ga\", which means either \"and\" and \"but\"."
@@ -391,7 +472,9 @@ regexp to replacement."
     ("\\(ゆえに\\)" . "\\1")
     ("\\(したがって\\)" . "\\1")
     ("\\(非常に\\)" . "\\1")
-    ("\\(著しく\\)" . "\\1")))
+    ("\\(著しく\\)" . "\\1"))
+  "Dictionary to find user-specified keywords. Preset values include several
+adjectives which are sometimes overused.")
 
 (defun copyedit-ja-check-user-specified-keywords ()
   "Find user specified keywords."
@@ -399,7 +482,8 @@ regexp to replacement."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-user-specified-keywords))
 
 (defconst copyedit-ja--dict-long-hiragana-sequences
-  '(("\\([ぁ-ん]\\{10,\\}\\)" . "\\1")))
+  '(("\\([ぁ-ん]\\{10,\\}\\)" . "\\1"))
+  "Dictionary to find long hiragana sequences.")
 
 (defun copyedit-ja-check-long-hiragana-sequences ()
   "Find long sequences of hiragana, which can lower readability."
@@ -431,16 +515,18 @@ Not implemented yet."
   (message "Not implemented yet."))
 
 (defconst copyedit-ja--dict-headings
-  '(("\\(^#\\{1,6\\} .+$\\)" . "\\1")))
+  '(("\\(^#\\{1,6\\} .+$\\)" . "\\1"))
+  "Dictionary to find headings.
+(Markdown ATX headings are supported for now.)")
 
 (defun copyedit-ja-enumerate-headings ()
-  "Enumerate headings.
-(Markdown ATX headings are supported for now.)"
+  "Enumerate headings."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-headings))
 
 (defconst copyedit-ja--dict-youni-negatives
-  '(("\\(ように[^。．]+?な[かいくけ]\\)" . "\\1")))
+  '(("\\(ように[^。．]+?な[かいくけ]\\)" . "\\1"))
+  "Dictionary to find \"youni\" followed by negative form.")
 
 (defun copyedit-ja-check-youni-negatives ()
   "Check \"youni...nai\"."
@@ -448,7 +534,8 @@ Not implemented yet."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-youni-negatives))
 
 (defconst copyedit-ja--dict-multiple-negatives
-  '(("\\(な[かいくけ][^。．]+な[かいくけ]\\)" . "\\1")))
+  '(("\\(な[かいくけ][^。．]+な[かいくけ]\\)" . "\\1"))
+  "Dictionary to find double negative expressions (nijuu hitei).")
 
 (defun copyedit-ja-check-multiple-negatives ()
   "Check for multiple negative expressions in a sentence."
@@ -534,7 +621,8 @@ Not implemented yet."
 
 (defconst copyedit-ja--dict-unwanted-spaces
   `(("\\([0-9A-Za-z]\\) \\(\\cC\\|\\cK\\|\\cH\\)" . "\\1\\2")
-    ("\\(\\cC\\|\\cK\\|\\cH\\) \\([0-9A-Za-z]\\)" . "\\1\\2")))
+    ("\\(\\cC\\|\\cK\\|\\cH\\) \\([0-9A-Za-z]\\)" . "\\1\\2"))
+  "Dictionary to normalize unwanted space characters in Japanese text.")
 
 (defun copyedit-ja-check-unwanted-spaces ()
   "Find unwanted spaces between Japanese character and latin character."
@@ -547,7 +635,7 @@ Not implemented yet."
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-unwanted-spaces))
 
 (defun copyedit-ja-remove-unwanted-spaces-region (start end)
-  "Remove unwanted spaces in region."
+  "Remove unwanted spaces in region between START and END."
   (interactive "r")
   (save-excursion
     (save-restriction
@@ -573,20 +661,23 @@ Not implemented yet."
     ("？" . "?")  ("！" . "!")
     ("゛" . nil)  ("゜" . nil)  ("´" . nil)  ("¨" . nil)
     ("＾" . "^")  ("￣" . nil)
-    ("　" . "  ")))
+    ("　" . "  "))
+  "Dictionary to translate full-width numbers, alphabets, punctuations and
+symbols to their half-width counterparts.")
 
 (defun copyedit-ja-check-charwidth ()
-  "Find fullwidth alnum characters."
+  "Find fullwidth alphabets and numbers."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-alnum-fullwidth-halfwidth))
 
 (defun copyedit-ja-normalize-charwidth ()
-  "Normalize fullwidth alnum characters to halfwidth ones."
+  "Normalize fullwidth alphabets and numbers to their halfwidth counterparts."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-alnum-fullwidth-halfwidth))
 
 (defun copyedit-ja-normalize-charwidth-region (start end)
-  "Normalize fullwidth alnum characters in region to halfwidth ones."
+  "Normalize fullwidth alphabets and numbers in region between START and END
+to their halfwidth counterparts."
   (interactive "r")
   (save-excursion
     (save-restriction
@@ -697,19 +788,24 @@ Not implemented yet."
     ("\\(\\cC\\)ません" . "\\1ない")
     ("ます"          . "る")
     ("ません"        . "しない")
-    ))
+    )
+    "Dictionary to translate distal style (keitai, desu/masu) to direct style
+(jotai, da/dearu).")
 
 (defun copyedit-ja-check-desumasu-to-dadearu ()
-  "Check style of Japanese text if distal (desu/masu)."
+  "Check style of Japanese text if distal (keitai, desu/masu)."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-distal-direct))
 
 (defun copyedit-ja-convert-desumasu-to-dadearu ()
-  "Change style of Japanese text from distal (desu/masu) to direct (da/dearu)."
+  "Change style of Japanese text from distal (keitai, desu/masu) to direct
+(jotai, da/dearu)."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-distal-direct))
 
 (defun copyedit-ja-convert-desumasu-to-dadearu-region (start end)
+  "Change style of Japanese text in region between START and END from distal
+(keitai, desu/masu) to direct (jotai, da/dearu)."
   (interactive "r")
   (save-excursion
     (save-restriction
@@ -735,19 +831,22 @@ Not implemented yet."
     (mapcar swap-pair-considering-regexp
             copyedit-ja--dict-distal-direct))
   "Dictionary to translate direct style (jotai, da/dearu) to
-  distal style (keitai, desu/masu).")
+distal style (keitai, desu/masu).")
 
 (defun copyedit-ja-check-dadearu-to-desumasu ()
-  "Check style of Japanese text if direct (da/dearu)."
+  "Check style of Japanese text if direct (jotai, da/dearu)."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-direct-distal))
 
 (defun copyedit-ja-convert-dadearu-to-desumasu ()
-  "Change style of Japanese text from direct (da/dearu) to distal (desu/masu)."
+  "Change style of Japanese text from direct (jotai, da/dearu) to distal
+(keitai, desu/masu)."
   (interactive)
   (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-direct-distal))
 
 (defun copyedit-ja-convert-dadearu-to-desumasu-region (start end)
+  "Change style of Japanese text in region between START and END from direct
+(jotai, da/dearu) to distal (keitai, desu/masu)."
   (interactive "r")
   (save-excursion
     (save-restriction
@@ -769,7 +868,10 @@ Not implemented yet."
                      "ラ リ ル レ ロ "
                      "ヮ ワ ヰ ヱ ヲ ン "
                      "ヴ ヵ ヶ ヷ ヸ ヹ ヺ ヽ ヾ")))
-    (split-string str " ")))
+    (split-string str " "))
+  "List of katakana characters.
+FIXME: it should cover more characters.
+See `copyedit-ja--dict-word-by-character-type-katakana'.")
 
 (defconst copyedit-ja--hiragana
   (let ((str (concat "ぁ あ ぃ い ぅ う ぇ え ぉ お "
@@ -783,34 +885,41 @@ Not implemented yet."
                      "ら り る れ ろ "
                      "ゎ わ ゐ ゑ を ん "
                      "ゔ ゕ ゖ わ゙ ゐ゙ ゑ゙ を゙ ゝ ゞ")))
-    (split-string str " ")))
+    (split-string str " "))
+  "List of Hiragana characters.
+FIXME: it should cover more characters.
+See `copyedit-ja--dict-word-by-character-type-hiragana'.")
 
 (defconst copyedit-ja--dict-katakana-hiragana
   (mapcar (lambda (ls) (cons (car ls) (cadr ls)))
-          (copyedit-ja--zip-lists copyedit-ja--katakana copyedit-ja--hiragana)))
+          (copyedit-ja--zip-lists copyedit-ja--katakana copyedit-ja--hiragana))
+  "Dictionary to translate katakana to hiragana.")
 
 (defconst copyedit-ja--dict-hiragana-katakana
   (mapcar (lambda (ls) (cons (car ls) (cadr ls)))
-          (copyedit-ja--zip-lists copyedit-ja--hiragana copyedit-ja--katakana)))
+          (copyedit-ja--zip-lists copyedit-ja--hiragana copyedit-ja--katakana))
+  "Dictionary to translate hiragana to katakana.")
 
 (defun copyedit-ja--katakana-to-hiragana (str)
+  "Convert katakana in STR to hiragana."
   (mapconcat (lambda (s)
                (copyedit-ja--translate s copyedit-ja--dict-katakana-hiragana))
              (split-string str "" t)
              ""))
 (defun copyedit-ja--hiragana-to-katakana (str)
+  "Convert hiragana in STR to katakana."
   (mapconcat (lambda (s)
                (copyedit-ja--translate s copyedit-ja--dict-hiragana-katakana))
              (split-string str "" t)
              ""))
 
 (defun copyedit-ja-katakana-to-hiragana-region (start end)
-  "Convert katakana in region to hiragana."
+  "Convert katakana in region between START and END to hiragana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--katakana-to-hiragana start end))
 
 (defun copyedit-ja-hiragana-to-katakana-region (start end)
-  "Convert hiragana in region to katakana."
+  "Convert hiragana in region between START and END to katakana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--hiragana-to-katakana start end))
 
@@ -818,23 +927,25 @@ Not implemented yet."
 ;; Aquire reading of Japanese text
 
 (defun copyedit-ja--get-reading-katakana (str)
-  "Acquire reading of Japanese text in katakana using MeCab."
+  "Acquire reading of Japanese text in STR in katakana using MeCab."
   (copyedit-ja--shell-command-string "mecab" str "--output-format-type=yomi"))
 
 (defun copyedit-ja--get-reading-hiragana (str)
-  "Acquire reading of Japanese text in hiragana using MeCab."
+  "Acquire reading of Japanese text in STR in hiragana using MeCab."
   (copyedit-ja--katakana-to-hiragana (copyedit-ja--get-reading-katakana str)))
 
 ;; ----------------------------------------------------------------
 ;; hiragana, katakna, and kanji to katakana/hiragana conversion
 
 (defun copyedit-ja-kanakanji-to-katakana-region (start end)
-  "Convert hiragana, katakna, and kanji in region to katakana."
+  "Convert hiragana, katakna, and kanji in region between START and END
+to katakana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--get-reading-katakana start end))
 
 (defun copyedit-ja-kanakanji-to-hiragana-region (start end)
-  "Convert hiragana, katakna, and kanji in region to hiragana."
+  "Convert hiragana, katakna, and kanji in region between START and END
+to hiragana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--get-reading-hiragana start end))
 
@@ -843,7 +954,11 @@ Not implemented yet."
 
 (defconst copyedit-ja--dict-notation-hou
   '(("\\([^一両双前後左右上下]\\|^\\)\\(方\\)\\([^法式向面]\\|$\\)" .
-     "\\1ほう\\3")))
+     "\\1ほう\\3"))
+  "Dictionary to find \"hou\" being written not in hiragana (U+307B U+3046)
+but in kanji (U+65B9).
+
+(This is just a personal preference. You may prefer otherwise.)")
 
 (defun copyedit-ja-check-notation-hou ()
   "Check notation (hou)."
@@ -851,7 +966,10 @@ Not implemented yet."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-notation-hou))
 
 (defconst copyedit-ja--dict-ordinal-numerals
-  '(("\\([0-9一二三四五六七八九十][つ番]\\)[め]" . "\\1目")))
+  '(("\\([0-9一二三四五六七八九十][つ番]\\)[め]" . "\\1目"))
+  "Dictionary to find \"-me\" after ordinal number being written in hiragana.
+
+(This is just a personal preference. You may prefer otherwise.)")
 
 (defun copyedit-ja-check-ordinal-numerals()
   "Check Japanese ordinal numerals."
