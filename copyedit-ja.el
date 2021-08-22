@@ -1,5 +1,5 @@
 ;; copyedit-ja.el --- Copyediting tools for Japanese text
-;; -*- encoding: utf-8; -*-
+;; -*- encoding: utf-8; lexical-binding: t -*-
 ;;
 ;;; Commentary:
 ;;
