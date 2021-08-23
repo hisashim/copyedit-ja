@@ -171,7 +171,7 @@ Example:
              (cond ((and (not a-is-regexp) b-is-regexp) t)
                    ((and a-is-regexp (not b-is-regexp)) nil)
                    (t (>= (length src-a) (length src-b))))))))
-    (sort dict strings-to-regexps-and-long-to-short)))
+    (sort (copy-alist dict) strings-to-regexps-and-long-to-short)))
 
 (defun copyedit-ja--find-replacement (str dict)
   "Return DICT value whose key exactly matches STR.
@@ -298,13 +298,8 @@ Example:
      (\"bar\" . \"Bar\")))
   ;=> \"Foo\"
 
-Note:
-  DICT keys and values must be plain strings. Regexps and functions are
-  not supported (yet)."
-  (let* ((counterpart (cdr (assoc str dict))))
-    (if counterpart
-        counterpart
-      str)))
+See `copyedit-ja--find-replacement' and `copyedit-ja--sort-dict' for detail."
+  (copyedit-ja--find-replacement str (copyedit-ja--sort-dict dict)))
 
 (defun copyedit-ja--filter-region (f start end)
   "Destructively apply function F to the region between START and END."
