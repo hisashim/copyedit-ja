@@ -1,9 +1,9 @@
-;; copyedit-ja.el --- Copyediting tools for Japanese text
+;; copyedit-ja.el --- Copyediting tool for Japanese text
 ;; -*- encoding: utf-8; lexical-binding: t -*-
 ;;
 ;;; Commentary:
 ;;
-;; Copyedit-ja: Copyediting tools for Japanese text
+;; Copyedit-ja: Copyediting tool for Japanese text
 ;; Copyright (c) 2008-2021 Hisashi Morita
 ;; License: Public Domain
 ;;

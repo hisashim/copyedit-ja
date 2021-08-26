@@ -1,4 +1,4 @@
-copyedit
+Copyedit-ja
 ========
 
-Copyediting utilities for editors
+Copyedit-ja is a copyediting tool for Japanese text on Emacs.
