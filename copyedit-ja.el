@@ -335,34 +335,32 @@ at start-of-line and/or end-of-line as well, that is normally excessive.)")
 If PARANOID is non-nil, paranoiac dictionary
 `copyedit-ja--dict-paren-width-paranoid' is used."
   (interactive "P")
-  (if paranoid
-      (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width-paranoid)
-    (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-paren-width)))
+  (let ((dict (if paranoid
+                  copyedit-ja--dict-paren-width-paranoid
+                copyedit-ja--dict-paren-width)))
+    (copyedit-ja--grep-buffers-using-dict dict)))
 
 (defun copyedit-ja-normalize-paren-width (&optional paranoid)
   "Replace half-width parentheses with their full-width counterparts.
 
+If region is active, application is restricted to the region.
+
 If PARANOID is non-nil, paranoiac dictionary
 `copyedit-ja--dict-paren-width-paranoid' is used."
   (interactive "P")
-  (if paranoid
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width-paranoid)
-    (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width)))
-
-(defun copyedit-ja-normalize-paren-width-region (start end &optional paranoid)
-  "Replace half-width parentheses in region between START and END with
-their full-width counterparts.
-
-If PARANOID is non-nil, paranoiac dictionary
-`copyedit-ja--dict-paren-width-paranoid' is used."
-  (interactive "r\nP")
-  (save-excursion
-    (save-restriction
-      (if paranoid
-          (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width-paranoid
-                                                   start end)
-        (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-paren-width
-                                                 start end)))))
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict (if paranoid
+                  copyedit-ja--dict-paren-width-paranoid
+                copyedit-ja--dict-paren-width)))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 (defconst copyedit-ja--dict-paren-matching
   '(("\\(([^)]*?）\\)" . "\\1")
@@ -664,17 +662,21 @@ Not implemented yet."
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-unwanted-spaces))
 
 (defun copyedit-ja-remove-unwanted-spaces ()
-  "Remove unwanted spaces in current buffer."
-  (interactive)
-  (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-unwanted-spaces))
+  "Remove unwanted spaces in current buffer.
 
-(defun copyedit-ja-remove-unwanted-spaces-region (start end)
-  "Remove unwanted spaces in region between START and END."
-  (interactive "r")
-  (save-excursion
-    (save-restriction
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-unwanted-spaces
-                                               start end))))
+If region is active, application is restricted to the region."
+  (interactive)
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict copyedit-ja--dict-unwanted-spaces))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 ;; ----------------------------------------------------------------
 ;; Normalizing character widths
@@ -708,18 +710,21 @@ symbols to their half-width counterparts.")
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-alnum-fullwidth-halfwidth))
 
 (defun copyedit-ja-normalize-charwidth ()
-  "Normalize fullwidth alphabets and numbers to their halfwidth counterparts."
-  (interactive)
-  (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-alnum-fullwidth-halfwidth))
+  "Normalize fullwidth alphabets and numbers to their halfwidth counterparts.
 
-(defun copyedit-ja-normalize-charwidth-region (start end)
-  "Normalize fullwidth alphabets and numbers in region between START and END
-to their halfwidth counterparts."
-  (interactive "r")
-  (save-excursion
-    (save-restriction
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-alnum-fullwidth-halfwidth
-                                               start end))))
+If region is active, application is restricted to the region."
+  (interactive)
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict copyedit-ja--dict-alnum-fullwidth-halfwidth))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 ;; ----------------------------------------------------------------
 ;; Converting style between distal and direct
@@ -836,18 +841,21 @@ to their halfwidth counterparts."
 
 (defun copyedit-ja-convert-desumasu-to-dadearu ()
   "Change style of Japanese text from distal (keitai, desu/masu) to direct
-(jotai, da/dearu)."
-  (interactive)
-  (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-distal-direct))
+(jotai, da/dearu).
 
-(defun copyedit-ja-convert-desumasu-to-dadearu-region (start end)
-  "Change style of Japanese text in region between START and END from distal
-(keitai, desu/masu) to direct (jotai, da/dearu)."
-  (interactive "r")
-  (save-excursion
-    (save-restriction
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-distal-direct
-                                               start end))))
+If region is active, application is restricted to the region."
+  (interactive)
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict copyedit-ja--dict-distal-direct))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 (defconst copyedit-ja--dict-direct-distal
   (let* ((re-grp "\\(\\\\(.*\\\\)\\)\\(.*\\)")
@@ -877,18 +885,21 @@ distal style (keitai, desu/masu).")
 
 (defun copyedit-ja-convert-dadearu-to-desumasu ()
   "Change style of Japanese text from direct (jotai, da/dearu) to distal
-(keitai, desu/masu)."
-  (interactive)
-  (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-direct-distal))
+(keitai, desu/masu).
 
-(defun copyedit-ja-convert-dadearu-to-desumasu-region (start end)
-  "Change style of Japanese text in region between START and END from direct
-(jotai, da/dearu) to distal (keitai, desu/masu)."
-  (interactive "r")
-  (save-excursion
-    (save-restriction
-      (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-direct-distal
-                                               start end))))
+If region is active, application is restricted to the region."
+  (interactive)
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict copyedit-ja--dict-direct-distal))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 ;; ----------------------------------------------------------------
 ;; Converting katakana and hiragana
