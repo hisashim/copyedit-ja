@@ -834,7 +834,7 @@ If region is active, application is restricted to the region."
     "Dictionary to translate distal style (keitai, desu/masu) to direct style
 (jotai, da/dearu).")
 
-(defun copyedit-ja-check-desumasu-to-dadearu ()
+(defun copyedit-ja-check-desumasu ()
   "Check style of Japanese text if distal (keitai, desu/masu)."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-distal-direct))
@@ -878,7 +878,7 @@ If region is active, application is restricted to the region."
   "Dictionary to translate direct style (jotai, da/dearu) to
 distal style (keitai, desu/masu).")
 
-(defun copyedit-ja-check-dadearu-to-desumasu ()
+(defun copyedit-ja-check-dadearu ()
   "Check style of Japanese text if direct (jotai, da/dearu)."
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-direct-distal))
@@ -961,12 +961,12 @@ See `copyedit-ja--dict-word-by-character-type-hiragana'.")
              (split-string str "" t)
              ""))
 
-(defun copyedit-ja-katakana-to-hiragana-region (start end)
+(defun copyedit-ja-convert-katakana-to-hiragana-region (start end)
   "Convert katakana in region between START and END to hiragana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--katakana-to-hiragana start end))
 
-(defun copyedit-ja-hiragana-to-katakana-region (start end)
+(defun copyedit-ja-convert-hiragana-to-katakana-region (start end)
   "Convert hiragana in region between START and END to katakana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--hiragana-to-katakana start end))
@@ -985,13 +985,13 @@ See `copyedit-ja--dict-word-by-character-type-hiragana'.")
 ;; ----------------------------------------------------------------
 ;; Converting hiragana, katakna, and kanji to katakana/hiragana
 
-(defun copyedit-ja-kanakanji-to-katakana-region (start end)
+(defun copyedit-ja-convert-kanakanji-to-katakana-region (start end)
   "Convert hiragana, katakna, and kanji in region between START and END
 to katakana."
   (interactive "r")
   (copyedit-ja--filter-region #'copyedit-ja--get-reading-katakana start end))
 
-(defun copyedit-ja-kanakanji-to-hiragana-region (start end)
+(defun copyedit-ja-convert-kanakanji-to-hiragana-region (start end)
   "Convert hiragana, katakna, and kanji in region between START and END
 to hiragana."
   (interactive "r")
