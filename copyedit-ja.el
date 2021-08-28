@@ -1025,9 +1025,21 @@ but in kanji (U+65B9).
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-ordinal-numerals))
 
 (defun copyedit-ja-normalize-ordinal-numerals()
-  "Normalize Japanese ordinal numerals."
+  "Normalize Japanese ordinal numerals.
+
+If region is active, application is restricted to the region."
   (interactive)
-  (copyedit-ja--perform-replace-using-dict copyedit-ja--dict-ordinal-numerals))
+  (let ((start (if (use-region-p) (region-beginning) nil))
+        (end (if (use-region-p) (region-end) nil))
+        (f #'copyedit-ja--perform-replace-using-dict)
+        (dict copyedit-ja--dict-ordinal-numerals))
+    (if (use-region-p)
+        (save-mark-and-excursion
+          (save-restriction
+            (narrow-to-region start end)
+            (goto-char (point-min))
+            (funcall f dict)))
+      (funcall f dict))))
 
 ;; ----------------------------------------------------------------
 
