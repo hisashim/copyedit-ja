@@ -516,7 +516,7 @@ which may introduce ambiguity.")
   (interactive)
   (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-conjunctive-particles-ga))
 
-(defconst copyedit-ja--dict-user-specified-keywords
+(defvar copyedit-ja--dict-user-specified-keywords
   '(("\\(すなわち\\)" . "\\1")
     ("\\(ゆえに\\)" . "\\1")
     ("\\(したがって\\)" . "\\1")
