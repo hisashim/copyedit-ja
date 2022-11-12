@@ -1,4 +1,4 @@
-Copyedit-ja - Copyediting tool for Japanese text
+Copyedit-ja: Copyediting tool for Japanese text
 ========
 
 Copyedit-ja is a copyediting tool for Japanese text on Emacs.
@@ -38,37 +38,57 @@ Try `M-x copyedit-ja- TAB` to list available commands.
 
 ## Requirements
 
-  * color-moccur: multi-buffer occur (grep) mode
-    - v2.71 (MELPA):
-      [https://melpa.org/#/color-moccur](https://melpa.org/#/color-moccur)
-      (source: [https://github.com/myuhe/color-moccur.el](https://github.com/myuhe/color-moccur.el))
-    - v2.73 from the original author:
-      [https://web.archive.org/web/20180527232131/www.bookshelf.jp/elc/color-moccur.el](https://web.archive.org/web/20180527232131/www.bookshelf.jp/elc/color-moccur.el)
-  * MeCab: Yet another Japanese morphological analyzer (optional)
+  * Emacs
+
+  * color-moccur: multi-buffer occur (grep) mode [1]
+    - [https://melpa.org/#/color-moccur](https://melpa.org/#/color-moccur)
+      (source: [https://github.com/myuhe/color-moccur.el](https://github.com/myuhe/color-moccur.el)
+      (forked from v2.71 of the original and incorporated fixes and improvements))
+
+  * MeCab: Yet another Japanese morphological analyzer. (optional)
     - [https://github.com/taku910/mecab](https://github.com/taku910/mecab)
+    - Dictionary for MeCab.
+      - [https://osdn.net/projects/naist-jdic/](https://osdn.net/projects/naist-jdic/)
+      - [https://sourceforge.net/projects/mecab/](https://sourceforge.net/projects/mecab/)
+
+[1]: color-moccur [v2.73](https://web.archive.org/web/20110224015820/http://www.bookshelf.jp:80/elc/color-moccur.el)
+from the original author can be found in the Internet Archive, although the
+code seems the same as
+[v2.71](https://web.archive.org/web/20100719125327/http://www.bookshelf.jp:80/elc/color-moccur.el).
 
 ## Installation
 
   1. Install requirements.
-     - Install color-moccur using Emacs package manager.
-       (See [https://melpa.org](https://melpa.org) for instructions.)
-     - Install MeCab and its UTF-8 dictionary, e.g.
+     - Install Emacs.
        ```
-       $ sudo apt install mecab mecab-ipadic-utf8
+       $ sudo apt install emacs
+       ```
+     - Install color-moccur using Emacs package manager.
+       (See [MELPA](https://melpa.org) for detail.)
+       ```
+       $ emacs ~/emacs.d/init.el
+       ...(add package configurations and reload)...
+       M-x package-list-packages
+       M-x package install
+       ...(choose color-moccur)...
+       ```
+     - Install MeCab and UTF-8 dictionary for it.
+       ```
+       $ sudo apt install mecab mecab-naist-jdic
        ```
 
   2. Install copyedit-ja.
-     - Put copyedit-ja.el somewhere in your load-path, e.g.
+     - Put `copyedit-ja.el` somewhere in your load-path.
        ```
        $ cp copyedit-ja.el ~/.emacs.d/lisp/
        ```
-     - If you prefer, load copyedit-ja on startup, e.g.
+     - If you prefer, load `copyedit-ja` on startup.
        ```
        $ echo "(require 'copyedit-ja)" >> ~/emacs.d/init.el
        ```
 
   3. Configure copyedit-ja (optional).
-     - Tweak dictionaries to fit your needs in your init file, e.g.
+     - Tweak dictionaries to fit your needs in your Emacs init file.
        ```
        (setq copyedit-ja--dict-user-specified-keywords
              (append copyedit-ja--dict-user-specified-keywords
