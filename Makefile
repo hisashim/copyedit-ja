@@ -5,18 +5,15 @@ EMACS    = emacs --batch --no-init-file --no-site-file --no-splash --directory .
            # (package-initialize): make elpa/melpa packages (color-moccur) findable
            # (prefer-coding-system 'utf-8-unix): make non-ASCII file (copyedit-ja.el) loadable
 
-SRC      = copyedit-ja.el
+all: check
 
-testlogs = $(foreach f,$(SRC),$(f:%.el=test-%-el.log))
-
-test-%-el.log: test/test-%.el
-	$(EMACS) --load="$<" 2>&1 | tee $@
-
-all: test
-
-test: $(testlogs)
+check: test/test-*.el
+	for f in $^; do \
+	  $(EMACS) --load="$$f" 2>&1 \
+	  | tee `basename --suffix=.el $$f`.log; \
+	done
 
 clean:
-	-rm -f $(testlogs)
+	-rm -f *.log
 
-.PHONY: all test clean
+.PHONY: all check clean
