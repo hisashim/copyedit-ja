@@ -995,11 +995,23 @@ See `copyedit-ja--dict-word-by-character-type-hiragana'.")
 ;; Acquiring reading of Japanese text
 
 (defun copyedit-ja--get-reading-katakana (str)
-  "Acquire reading of Japanese text in STR in katakana using MeCab."
-  (copyedit-ja--shell-command-string "mecab" str "--output-format-type=yomi"))
+  "Acquire reading of Japanese text in STR in katakana using MeCab.
+
+(Skip ASCII parts of STR to prevent MeCab with NAIST-JDIC from converting
+ASCII characters to their pronunciations which is unwanted for our purpose.)
+
+TODO: Skip non-ASCII-yet-non-Japanese characters from being converted,
+e.g. latin letters with diacritical marks, as in \"Bézier\"."
+  (let ((regexp "[[:nonascii:]]+")
+        (rep (lambda (s)
+               (copyedit-ja--shell-command-string "mecab" s "--output-format-type=yomi")))
+        (string str))
+    (replace-regexp-in-string regexp rep string)))
 
 (defun copyedit-ja--get-reading-hiragana (str)
-  "Acquire reading of Japanese text in STR in hiragana using MeCab."
+  "Acquire reading of Japanese text in STR in hiragana using MeCab.
+
+See `copyedit-ja--get-reading-katakana' for detail."
   (copyedit-ja--katakana-to-hiragana (copyedit-ja--get-reading-katakana str)))
 
 ;; ----------------------------------------------------------------
