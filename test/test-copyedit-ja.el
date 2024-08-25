@@ -62,10 +62,10 @@
                                                     "--color" "b"))))
 
 (ert-deftest test-copyedit-ja--shell-command-string-unicode ()
-  (should (equal "/dev/stdin: UTF-8 Unicode text"
+  (should (equal "text/plain; charset=utf-8"
                  (copyedit-ja--shell-command-string "file"
                                                     "ひらがな\n"
-                                                    "-"))))
+                                                    "--brief" "--mime" "-"))))
 
 (ert-deftest test-copyedit-ja--zip-lists ()
   (should (equal '((1 4) (2 5) (3 nil))
