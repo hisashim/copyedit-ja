@@ -1104,6 +1104,49 @@ If region is active, application is restricted to the region."
             (funcall f dict)))
       (funcall f dict))))
 
+(defconst copyedit-ja--dict-suspicious-hiragana
+  (let ((hira "\u3041-\u3096\u3099-\u309f")
+        (kanji "\u4e00-\u9fff\u3400-\u4dbf")
+        (sus-hira "へべぺり"))
+    `((,(concat "\\(^\\|[^" hira kanji "]\\)\\([" sus-hira "]\\)\\($\\|[^" hira kanji "]\\)") . "\\1\\2\\3")))
+  "Dictionary to find hiragana that do not have preceding or succeeding
+hiragana or kanji, which are possibly typos that are easy for human eyes to
+overlook, e.g. \"へアー\", \"べッド\", \"ぺン\", or \"ツりー\".")
+
+(defun copyedit-ja-check-suspicious-hiragana ()
+  "Check suspicious uses of hiragana."
+  (interactive)
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-suspicious-hiragana))
+
+(defconst copyedit-ja--dict-suspicious-katakana
+  (let ((kata "\u30a0-\u30ffー")
+        (sus-kata "ヘベペリエカトニハロー"))
+    `((,(concat "\\(^\\|[^" kata "]\\)\\([" sus-kata "]\\)\\($\\|[^" kata "]\\)") . "\\1\\2\\3")))
+  "Dictionary to find katakana that do not have preceding or succeeding
+katakana, which are possibly typos that are easy for human eyes to overlook,
+e.g. \"そこヘ\", \"食ベる\", \"ぺらペら\", \"つまリ\", \"エ具\", \"圧カ\",
+\"ト伝\", \"ニ番目\", \"十ハ番\", \"人ロ\", or \"ーつ\".")
+
+(defun copyedit-ja-check-suspicious-katakana ()
+  "Check suspicious uses of kanji."
+  (interactive)
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-suspicious-katakana))
+
+(defconst copyedit-ja--dict-suspicious-kanji
+  (let ((hira "\u3041-\u3096\u3099-\u309f")
+        (kanji "\u4e00-\u9fff\u3400-\u4dbf")
+        (sus-kanji "工力卜二八口一"))
+    `((,(concat "\\(^\\|[^" hira kanji "]\\)\\([" sus-kanji "]\\)\\($\\|[^" hira kanji "]\\)") . "\\1\\2\\3")))
+  "Dictionary to find kanji that do not have preceding or succeeding hiragana
+or kanji, which are possibly typos that are easy for human eyes to overlook,
+e.g. \"工ッジ\", \"メ力\", \"卜ーン\", \"二ーズ\", \"八ム\", \"口グ\", or
+\"キ一\".")
+
+(defun copyedit-ja-check-suspicious-kanji ()
+  "Check suspicious uses of kanji."
+  (interactive)
+  (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-suspicious-kanji))
+
 ;; ----------------------------------------------------------------
 
 (provide 'copyedit-ja)
