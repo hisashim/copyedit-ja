@@ -1073,37 +1073,6 @@ If region is active, application is restricted to the region."
             (funcall f dict)))
       (funcall f dict))))
 
-(defconst copyedit-ja--dict-suspicious-hiragana-katakana-ri
-  (let ((hira (apply #'concat copyedit-ja--hiragana))
-        (kata (apply #'concat (append copyedit-ja--katakana '("ー")))))
-    `((,(concat "\\(^\\|[^" hira "]\\)り\\($\\|[^" hira "]\\)") . "\\1リ\\2")
-      (,(concat "\\(^\\|[^" kata "]\\)リ\\($\\|[^" kata "]\\)") . "\\1り\\2")))
-  "Dictionary to find hiragana and katakana ri's that do not have preceding
-or succeeding character of the same type, which are possibly typos that are
-easy for human eyes to overlook, e.g. \"ツりー\" or \"つまリ\".")
-
-(defun copyedit-ja-check-suspicious-hiragana-katakana-ri()
-  "Check suspicisous uses of hiragana or katakana ri's."
-  (interactive)
-  (copyedit-ja--grep-buffers-using-dict copyedit-ja--dict-suspicious-hiragana-katakana-ri))
-
-(defun copyedit-ja-normalize-suspicious-hiragana-katakana-ri()
-  "Normalize suspicisous uses of hiragana or katakana ri's.
-
-If region is active, application is restricted to the region."
-  (interactive)
-  (let ((start (if (use-region-p) (region-beginning) nil))
-        (end (if (use-region-p) (region-end) nil))
-        (f #'copyedit-ja--perform-replace-using-dict)
-        (dict copyedit-ja--dict-suspicious-hiragana-katakana-ri))
-    (if (use-region-p)
-        (save-mark-and-excursion
-          (save-restriction
-            (narrow-to-region start end)
-            (goto-char (point-min))
-            (funcall f dict)))
-      (funcall f dict))))
-
 (defconst copyedit-ja--dict-suspicious-hiragana
   (let ((hira "\u3041-\u3096\u3099-\u309f")
         (kanji "\u4e00-\u9fff\u3400-\u4dbf")
